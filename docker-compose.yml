@@ -97,9 +97,6 @@ services:
       - path: .env
         required: false
     environment:
-      # El standalone escucha en el hostname del contenedor si no se fija:
-      # con 0.0.0.0 acepta también loopback (healthcheck) y la red Docker.
-      HOSTNAME: 0.0.0.0
       DATABASE_URL: postgres://${POSTGRES_USER:-popconly}:${POSTGRES_PASSWORD}@postgres:5432/popconly_auth
       MONGODB_URI: mongodb://${MONGO_USER:-popconly}:${MONGO_PASSWORD}@mongo:27017/popconly_catalog?authSource=admin
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
@@ -114,7 +111,9 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/titles?slug=fallout').then((r)=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      # Por hostname del contenedor: el standalone NO escucha en loopback y
+      # HOSTNAME=0.0.0.0 está prohibido (Auth.js lo usa para generar URLs).
+      test: ["CMD", "node", "-e", "fetch('http://'+require('os').hostname()+':3000/api/titles?slug=fallout').then((r)=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 10s
       retries: 5
