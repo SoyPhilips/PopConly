@@ -421,7 +421,9 @@ export default function BrowsePage() {
             </Link>
           </div>
         )}
-        {/* Continuar viendo */}
+        {/* Continuar viendo: SOLO con sesión (sin ella no hay historial
+            real y la demo sería puro prototipo). */}
+        {status !== "unauthenticated" && (
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -513,15 +515,16 @@ export default function BrowsePage() {
                     <h3 className="text-base font-semibold truncate">
                       {c.title}
                     </h3>
-                    <p className="text-xs text-[#e7bcbc] line-clamp-1">
-                      {c.desc}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  <p className="text-xs text-[#e7bcbc] line-clamp-1">
+                    {c.desc}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
           )}
         </section>
+        )}
 
         {/* Recomendado para ti: algoritmo guardado por usuario+perfil.
             Sin reemplazos visibles: caché instantánea, skeletons si es nuevo. */}
