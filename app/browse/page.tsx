@@ -11,6 +11,8 @@ import SearchResults from "@/components/SearchResults";
 import { PosterMiniCard } from "@/components/PrototypeCards";
 import CoverImg from "@/components/CoverImg";
 import { LikeButton, PlusCheckButton } from "@/components/ActionButtons";
+import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
+import { pushFavorite } from "@/lib/myListSync";
 import { useSearchScroll } from "@/lib/useSearchScroll";
 import { allTitles } from "@/lib/findTitle";
 import { slugify } from "@/lib/slugs";
@@ -54,6 +56,7 @@ export default function BrowsePage() {
     age?: string;
     tech?: string;
     image: string;
+    poster?: string;
     alt?: string;
   };
   const [top5, setTop5] = useState<TopRow[] | null>(null);
@@ -83,6 +86,7 @@ export default function BrowsePage() {
                 age: x.age ?? "16+",
                 tech: "4K HDR",
                 image: x.image,
+                poster: x.posterUrl ?? x.image,
                 alt: `Póster de ${x.title}`,
               }));
               if (!cancelled && mapped.length > 0) {
@@ -294,6 +298,23 @@ export default function BrowsePage() {
 
   // Héroe inteligente: rota a lo que el algoritmo recomienda para este perfil.
   const { hero, reason: heroReason, personalized, ready: heroReady } = useSmartHero(BROWSE_HERO, undefined, 0);
+  const [heroInList, setHeroInList] = useState(false);
+
+  useEffect(() => {
+    setHeroInList(loadMyList().some((i) => i.title === hero.title));
+  }, [hero.title]);
+
+  const toggleHeroList = (on: boolean) => {
+    const base = loadMyList();
+    const next = on
+      ? base.some((i) => i.title === hero.title)
+        ? base
+        : [...base, { ...hero, downloaded: false }]
+      : base.filter((i) => i.title !== hero.title);
+    saveMyList(next);
+    setHeroInList(on);
+    pushFavorite(hero.title, on);
+  };
 
   return (
     <div className="w-full min-h-screen bg-[#0D0D11] text-[#e4e1e7]">
@@ -384,7 +405,11 @@ export default function BrowsePage() {
                 </span>
                 <span className="font-semibold">Más información</span>
               </button>
-              <PlusCheckButton />
+              <PlusCheckButton
+                key={`hero-pc-${hero.title}-${heroInList}`}
+                initialOn={heroInList}
+                onToggle={toggleHeroList}
+              />
               <LikeButton />
             </div>
           </div>
@@ -643,7 +668,7 @@ export default function BrowsePage() {
                 </span>
                 <span className="relative z-10 w-full aspect-[2/3] rounded-xl overflow-hidden shadow-2xl bg-[#1b1b1f] transition-all duration-300 group-hover:scale-[1.05] group-hover:shadow-[0_20px_40px_rgba(255,42,77,0.3)] block">
                   <CoverImg
-                    src={thumb(t.image, 256)}
+                    src={thumb(t.poster ?? t.image, 256)}
                     alt={t.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                   />

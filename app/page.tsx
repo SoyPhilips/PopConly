@@ -90,7 +90,7 @@ export default function LandingPage() {
   const [selected, setSelected] = useState<TitleDetail | null>(null);
 
   // Tendencias reales: lo más visto en toda la plataforma (null = cargando).
-  type TrendRow = TrendingTitle & { synopsis?: string };
+  type TrendRow = TrendingTitle & { synopsis?: string; poster?: string };
   const [trend, setTrend] = useState<{ movies: TrendRow[]; series: TrendRow[] } | null>(null);
 
   useEffect(() => {
@@ -105,6 +105,7 @@ export default function LandingPage() {
         age: x.age ?? "16+",
         tech: "4K HDR",
         image: x.image,
+        poster: x.posterUrl ?? x.image,
         alt: `Póster de ${x.title}`,
         synopsis: x.synopsis,
       });
@@ -331,7 +332,7 @@ export default function LandingPage() {
                 <div className="relative w-full aspect-[2/3] overflow-hidden bg-[#0e0e12]">
                   <CoverImg
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    src={thumb(c.image, 256)}
+                    src={thumb(c.poster ?? c.image, 256)}
                     alt={c.alt}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-transparent to-transparent opacity-90 pointer-events-none" />
