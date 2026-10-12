@@ -2,31 +2,21 @@
 
 import { useState } from "react";
 import AvatarFace from "./AvatarFace";
-import { thumb } from "@/lib/thumb";
+import { CUSTOM_AVATARS, type CustomAvatar } from "@/lib/avatars";
 
-/** Personajes reales del catálogo sobre fondo sólido (estilo Netflix).
- *  Se guarda la foto elegida (o la inicial) en la DB del perfil. */
+/** Galería de avatares: la inicial + personajes generados por el equipo
+ *  (public/avatars + lib/avatars.ts). Sin carátulas de muestra. */
 
 export type AvatarChoice = { id: string; label: string; src: string | null };
 
-const V = (kind: string, cat: string, slug: string) =>
-  `/api/stream?file=${kind}/${cat}/${slug}/vertical.jpg&w=256`;
+const INITIAL_CHOICE: AvatarChoice = { id: "initial", label: "Inicial", src: null };
 
-export const AVATAR_CHOICES: AvatarChoice[] = [
-  { id: "initial", label: "Inicial", src: null },
-  { id: "deadpool", label: "Deadpool", src: V("peliculas", "accion", "deadpool-wolverine") },
-  { id: "spidey", label: "Spider-Man", src: V("peliculas", "accion", "spider-man-brand-new-day") },
-  { id: "toystory", label: "Toy Story", src: V("peliculas", "comedia", "toy-story-5") },
-  { id: "minecraft", label: "Minecraft", src: V("peliculas", "comedia", "a-minecraft-movie") },
-  { id: "gladiator", label: "Gladiator II", src: V("peliculas", "accion", "gladiator-ii") },
-  { id: "ballerina", label: "Ballerina", src: V("peliculas", "accion", "ballerina") },
-  { id: "avatar", label: "Avatar", src: V("peliculas", "ciencia-ficcion", "avatar-fire-and-ash") },
-  { id: "f1", label: "F1", src: V("peliculas", "accion", "f1") },
-  { id: "fallout", label: "Fallout", src: V("series", "accion", "fallout") },
-  { id: "cobra", label: "Cobra Kai", src: V("series", "accion", "cobra-kai") },
-  { id: "genv", label: "Gen V", src: V("series", "accion", "gen-v") },
-  { id: "3bp", label: "3 Body Problem", src: V("series", "ciencia-ficcion", "3-body-problem") },
-];
+function toChoices(custom: CustomAvatar[]): AvatarChoice[] {
+  return [
+    INITIAL_CHOICE,
+    ...custom.map((c) => ({ id: c.id, label: c.label, src: c.src as string | null })),
+  ];
+}
 
 export default function AvatarPicker({
   name,
@@ -42,6 +32,7 @@ export default function AvatarPicker({
   onClose: () => void;
 }) {
   const [sel, setSel] = useState<string | null>(current);
+  const choices = toChoices(CUSTOM_AVATARS);
   return (
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
@@ -64,10 +55,12 @@ export default function AvatarPicker({
           </button>
         </div>
         <p className="text-xs text-[#e7bcbc] mb-5">
-          Personajes de tu catálogo sobre fondo sólido, o la inicial de {name}.
+          {choices.length > 1
+            ? `Personajes de tu catálogo sobre fondo sólido, o la inicial de ${name}.`
+            : "De momento, la inicial de tu perfil. Tus personajes generados aparecerán aquí."}
         </p>
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-          {AVATAR_CHOICES.map((c) => {
+          {choices.map((c) => {
             const active = (sel ?? null) === c.src;
             return (
               <button
