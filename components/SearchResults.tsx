@@ -19,11 +19,33 @@ export default function SearchResults({
   const [exact, setExact] = useState<CatalogItem[]>([]);
   const [related, setRelated] = useState<CatalogItem[]>([]);
   const [searching, setSearching] = useState(false);
+  // Lo más buscado por todos (con respaldo local).
+  const [hotSearches, setHotSearches] = useState<string[]>(SUGGESTIONS);
 
   const q = query.trim().toLowerCase();
 
   // Catálogo vía API (Mongo si existe, local si no). Sin esto, títulos nuevos
   // en Mongo serían invisibles al buscar.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/top");
+        if (!r.ok) return;
+        const d = (await r.json()) as { topSearches?: string[] };
+        if (!cancelled && d.topSearches && d.topSearches.length > 0) {
+          setHotSearches(
+            d.topSearches.slice(0, 6).map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+          );
+        }
+      } catch {
+        /* sugerencias locales */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   useEffect(() => {
     if (!q) {
       setExact([]);
@@ -85,7 +107,7 @@ export default function SearchResults({
           Títulos, géneros, personas y años de películas y series.
         </p>
         <div className="flex flex-wrap justify-center gap-2 mt-5">
-          {SUGGESTIONS.map((s) => (
+          {hotSearches.map((s) => (
             <button
               key={s}
               onClick={() => onQueryChange(s)}
@@ -135,23 +157,23 @@ export default function SearchResults({
             ))}
           </div>
         ) : (
-        <div className="rounded-xl bg-[#1b1b1f] p-10 text-center mt-6">
-          <p className="font-semibold">Sin coincidencias para “{query.trim()}”</p>
-          <p className="text-sm text-white/50 mt-1">
-            Prueba con otro título, género o año.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2 mt-5">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => onQueryChange(s)}
-                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                {s}
-              </button>
-            ))}
+          <div className="rounded-xl bg-[#1b1b1f] p-10 text-center mt-6">
+            <p className="font-semibold">Sin coincidencias para “{query.trim()}”</p>
+            <p className="text-sm text-white/50 mt-1">
+              Prueba con otro título, género o año.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mt-5">
+              {hotSearches.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onQueryChange(s)}
+                  className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
         )
       ) : (
         <>

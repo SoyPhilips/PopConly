@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
@@ -8,6 +8,9 @@ import CoverImg from "@/components/CoverImg";
 import { thumb } from "@/lib/thumb";
 import { checkUser } from "@/lib/actions";
 import TitleModal, { type TitleDetail } from "@/components/TitleModal";
+import { allTitles } from "@/lib/findTitle";
+import type { CatalogItem } from "@/lib/catalog";
+import type { TrendingTitle } from "@/lib/data";
 import {
   HERO_GRID,
   TRENDING_MOVIES,
@@ -86,7 +89,73 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [selected, setSelected] = useState<TitleDetail | null>(null);
 
-  const trending = tab === "movies" ? TRENDING_MOVIES : TRENDING_SERIES;
+  // Tendencias reales: lo más visto en toda la plataforma (null = cargando).
+  type TrendRow = TrendingTitle & { synopsis?: string };
+  const [trend, setTrend] = useState<{ movies: TrendRow[]; series: TrendRow[] } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const toRow = (x: CatalogItem, i: number): TrendRow => ({
+        rank: `TOP ${i + 1}`,
+        title: x.title,
+        genre: (x.genres ?? []).slice(0, 2).join(" • ") || "Destacado",
+        meta: `${x.year ?? ""} • ${(x.genres ?? [])[0] ?? ""}`.trim(),
+        match: x.match ?? "",
+        age: x.age ?? "16+",
+        tech: "4K HDR",
+        image: x.image,
+        alt: `Póster de ${x.title}`,
+        synopsis: x.synopsis,
+      });
+      try {
+        const r = await fetch("/api/top");
+        if (r.ok) {
+          const d = (await r.json()) as { slugs?: string[] };
+          if (d.slugs && d.slugs.length > 0) {
+            const t = await fetch(`/api/titles?slugs=${encodeURIComponent(d.slugs.join(","))}`);
+            if (t.ok) {
+              const docs = (await t.json()) as { items?: CatalogItem[] };
+              const items = docs.items ?? [];
+              const movies = items.filter((x) => (x.type ?? "") === "Película").slice(0, 5);
+              const series = items.filter((x) => (x.type ?? "") !== "Película").slice(0, 5);
+              if (!cancelled && (movies.length > 0 || series.length > 0)) {
+                setTrend({
+                  movies: movies.map(toRow),
+                  series: series.map(toRow),
+                });
+                return;
+              }
+            }
+          }
+        }
+      } catch {
+        /* vitrina de respaldo abajo */
+      }
+      if (!cancelled) {
+        // Sin vistas aún: lo mejor valorado (real) por tipo.
+        const byRating = [...allTitles()].sort(
+          (a, b) => parseFloat(b.rating ?? "0") - parseFloat(a.rating ?? "0")
+        );
+        setTrend({
+          movies: byRating.filter((x) => (x.type ?? "") === "Película").slice(0, 5).map(toRow),
+          series: byRating.filter((x) => (x.type ?? "") !== "Película").slice(0, 5).map(toRow),
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const trending: TrendRow[] =
+    trend != null
+      ? tab === "movies"
+        ? trend.movies
+        : trend.series
+      : tab === "movies"
+        ? TRENDING_MOVIES
+        : TRENDING_SERIES;
 
   return (
     <div className="w-full min-h-screen bg-[#0D0D11] text-[#e4e1e7]">
@@ -230,7 +299,18 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {trending.map((c) => (
+            {trend === null ? (
+              [0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="rounded-xl overflow-hidden bg-[#1b1b1f] animate-pulse">
+                  <div className="w-full aspect-[2/3] bg-[#2a292e]" />
+                  <div className="p-3 flex flex-col gap-2">
+                    <div className="h-4 w-2/3 rounded bg-[#2a292e]" />
+                    <div className="h-3 w-1/2 rounded bg-[#2a292e]" />
+                  </div>
+                </div>
+              ))
+            ) : (
+            trending.map((c) => (
               <button
                 key={c.title}
                 onClick={() =>
@@ -241,7 +321,7 @@ export default function LandingPage() {
                     age: c.age,
                     type: tab === "movies" ? "Película" : "Serie",
                     genres: c.genre.split("•").map((g) => g.trim()),
-                    synopsis: SYNOPSIS[c.title],
+                    synopsis: c.synopsis ?? SYNOPSIS[c.title],
                     match: c.match,
                     meta: c.meta,
                   })
@@ -286,7 +366,8 @@ export default function LandingPage() {
                   </span>
                 </div>
               </button>
-            ))}
+            ))
+            )}
           </div>
         </section>
 

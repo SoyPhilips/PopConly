@@ -1,5 +1,27 @@
 import { NextResponse } from "next/server";
 import { getAllTitleDocs, getTitleBySlug, searchTitleDocs } from "@/lib/catalogDb";
+import { getRedis } from "@/lib/redis";
+
+/** Registra la búsqueda para el ranking de "lo más buscado" (/api/top).
+ *  Solo conteo agregado, sin usuarios. Nunca bloquea la respuesta. */
+function logSearch(raw: string) {
+  try {
+    const r = getRedis();
+    if (!r) return;
+    const q = raw.trim().toLowerCase().slice(0, 40);
+    if (q.length < 2) return;
+    void (async () => {
+      try {
+        await r.zincrby("popconly:searches", 1, q);
+        await r.zremrangebyrank("popconly:searches", 0, -201);
+      } catch {
+        /* mejor esfuerzo */
+      }
+    })();
+  } catch {
+    /* mejor esfuerzo */
+  }
+}
 
 /** Catálogo público (Módulo 2). Sin Mongo responde con el catálogo local. */
 export async function GET(req: Request) {
@@ -21,6 +43,7 @@ export async function GET(req: Request) {
   }
 
   if (q !== null) {
+    if (q.trim()) logSearch(q);
     const items = await searchTitleDocs(q);
     const genreSet = new Set(
       items.flatMap((t) => (t.genres ?? []).map((g) => g.toLowerCase()))

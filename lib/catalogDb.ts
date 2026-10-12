@@ -160,6 +160,24 @@ export async function getRelated(doc: TitleDoc, limit = 6): Promise<TitleDoc[]> 
     .slice(0, limit);
 }
 
+/** Agregados recientemente: últimos trailers sincronizados (Mongo).
+ *  Sin Mongo devuelve [] (el front usa vitrina local). */
+export async function getRecentTrailers(limit = 12): Promise<TitleDoc[]> {
+  const db = await mongoDb();
+  if (!db) return [];
+  try {
+    const docs = await db
+      .collection("titles")
+      .find({ trailerYoutube: { $nin: [null, ""] } })
+      .sort({ trailerFetchedAt: -1 })
+      .limit(Math.min(Math.max(limit, 1), 30))
+      .toArray();
+    return docs.map(fromDoc);
+  } catch {
+    return [];
+  }
+}
+
 /** Guarda el trailer sincronizado con YouTube en el documento Mongo.
  *  Sin Mongo no hay dónde persistir: devuelve false (queda solo caché Redis). */
 export async function saveTrailer(

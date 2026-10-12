@@ -43,7 +43,94 @@ export default function BrowsePage() {
   });
   const [recsDone, setRecsDone] = useState(false);
   const [needsPlan, setNeedsPlan] = useState(false);
+  // Top 5 global y Recién llegados: datos reales (null = cargando → skeletons).
+  type TopRow = {
+    rank: number;
+    title: string;
+    genre: string;
+    meta?: string;
+    rating: string;
+    match?: string;
+    age?: string;
+    tech?: string;
+    image: string;
+    alt?: string;
+  };
+  const [top5, setTop5] = useState<TopRow[] | null>(null);
+  const [recent, setRecent] = useState<typeof RECENTLY_ADDED | null>(null);
   const { status } = useSession();
+
+  // Top global + recientes: públicos, sin sesión. Nunca demos que se reemplazan.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // --- Top 5 más vistos en toda la plataforma ---
+      try {
+        const r = await fetch("/api/top");
+        if (r.ok) {
+          const d = (await r.json()) as { slugs?: string[] };
+          if (d.slugs && d.slugs.length > 0) {
+            const t = await fetch(`/api/titles?slugs=${encodeURIComponent(d.slugs.slice(0, 5).join(","))}`);
+            if (t.ok) {
+              const docs = (await t.json()) as { items?: CatalogItem[] };
+              const mapped = (docs.items ?? []).map((x, i) => ({
+                rank: i + 1,
+                title: x.title,
+                genre: (x.genres ?? []).slice(0, 2).join(" • ") || "Destacado",
+                meta: `${x.year ?? ""} • ${(x.genres ?? [])[0] ?? ""}`.trim(),
+                rating: x.rating ?? "",
+                match: x.match,
+                age: x.age ?? "16+",
+                tech: "4K HDR",
+                image: x.image,
+                alt: `Póster de ${x.title}`,
+              }));
+              if (!cancelled && mapped.length > 0) {
+                setTop5(mapped);
+              }
+            }
+          }
+        }
+      } catch {
+        /* vitrina de respaldo abajo */
+      }
+      if (!cancelled) {
+        // Sin vistas aún: lo mejor valorado (real) en vez de hueco.
+        setTop5((prev) => {
+          if (prev) return prev;
+          return TOP_FIVE;
+        });
+      }
+      // --- Agregados recientemente (últimos sincronizados en DB) ---
+      try {
+        const r = await fetch("/api/recent?limit=6");
+        if (r.ok) {
+          const d = (await r.json()) as { items?: CatalogItem[] };
+          const mapped = (d.items ?? []).slice(0, 6).map((x) => ({
+            title: x.title,
+            desc: (x.synopsis ?? "").slice(0, 90),
+            meta: x.meta ?? `${x.year ?? ""} • ${x.type ?? ""}`.trim(),
+            tag: "NUEVO",
+            rating: x.rating ?? "",
+            tech: "4K HDR",
+            badgeStyle: "red" as const,
+            image: x.image,
+          }));
+          if (!cancelled && mapped.length > 0) {
+            setRecent(mapped);
+          }
+        }
+      } catch {
+        /* vitrina de respaldo abajo */
+      }
+      if (!cancelled) {
+        setRecent((prev) => prev ?? RECENTLY_ADDED);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Módulo 3: historial real + recomendados (solo con sesión; si no, datos locales).
   // Los recomendados se pintan de caché al instante y solo cambian si el
@@ -168,22 +255,28 @@ export default function BrowsePage() {
     [q, continueBase]
   );
   const filteredTop = useMemo(
-    () =>
-      q
-        ? TOP_FIVE.filter((t) =>
+    () => {
+      const base = top5 ?? [];
+      return q
+        ? base.filter((t) =>
             `${t.title} ${t.genre}`.toLowerCase().includes(q)
           )
-        : TOP_FIVE,
-    [q]
+        : base;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [q, top5]
   );
   const filteredRecent = useMemo(
-    () =>
-      q
-        ? RECENTLY_ADDED.filter((r) =>
+    () => {
+      const base = recent ?? [];
+      return q
+        ? base.filter((r) =>
             `${r.title} ${r.desc} ${r.meta}`.toLowerCase().includes(q)
           )
-        : RECENTLY_ADDED,
-    [q]
+        : base;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [q, recent]
   );
 
   const openHeroInfo = () =>
@@ -513,7 +606,16 @@ export default function BrowsePage() {
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-1">
-            {filteredTop.map((t) => (
+            {top5 === null ? (
+              [0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="relative pl-10">
+                  <div className="w-full aspect-[2/3] rounded-xl bg-[#1b1b1f] animate-pulse overflow-hidden">
+                    <div className="w-full h-full bg-[#2a292e]" />
+                  </div>
+                </div>
+              ))
+            ) : (
+            filteredTop.map((t) => (
               <button
                 key={t.rank}
                 onClick={() =>
@@ -561,7 +663,8 @@ export default function BrowsePage() {
                   </span>
                 </span>
               </button>
-            ))}
+            ))
+            )}
           </div>
         </section>
 
@@ -579,7 +682,18 @@ export default function BrowsePage() {
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {filteredRecent.map((r) => (
+            {recent === null ? (
+              [0, 1, 2].map((i) => (
+                <div key={i} className="bg-[#1b1b1f] rounded-xl overflow-hidden animate-pulse">
+                  <div className="w-full aspect-video bg-[#2a292e]" />
+                  <div className="p-4 flex flex-col gap-2">
+                    <div className="h-4 w-1/2 rounded bg-[#2a292e]" />
+                    <div className="h-3 w-full rounded bg-[#2a292e]" />
+                  </div>
+                </div>
+              ))
+            ) : (
+            filteredRecent.map((r) => (
               <button
                 key={r.title}
                 onMouseEnter={() => warmTrailer(r.title)}
@@ -650,7 +764,8 @@ export default function BrowsePage() {
                   </span>
                 </span>
               </button>
-            ))}
+            ))
+            )}
           </div>
         </section>
 
