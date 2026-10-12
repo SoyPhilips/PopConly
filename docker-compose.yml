@@ -97,6 +97,9 @@ services:
       - path: .env
         required: false
     environment:
+      # El standalone escucha en el hostname del contenedor si no se fija:
+      # con 0.0.0.0 acepta también loopback (healthcheck) y la red Docker.
+      HOSTNAME: 0.0.0.0
       DATABASE_URL: postgres://${POSTGRES_USER:-popconly}:${POSTGRES_PASSWORD}@postgres:5432/popconly_auth
       MONGODB_URI: mongodb://${MONGO_USER:-popconly}:${MONGO_PASSWORD}@mongo:27017/popconly_catalog?authSource=admin
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
