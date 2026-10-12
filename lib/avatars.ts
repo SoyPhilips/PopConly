@@ -12,5 +12,11 @@ export type CustomAvatar = {
 };
 
 export const CUSTOM_AVATARS: CustomAvatar[] = [
-  // Personajes generados por el equipo (vacío hasta la primera entrega).
+  { id: "deadpool", label: "Deadpool", src: "/avatars/deadpool.png" },
+  { id: "wolverine", label: "Wolverine", src: "/avatars/wolverine.png" },
+  { id: "spiderman", label: "Spider-Man", src: "/avatars/spiderman.png" },
+  { id: "john-wick", label: "John Wick", src: "/avatars/john-wick.png" },
+  { id: "vault-boy", label: "Vault Boy", src: "/avatars/vault-boy.png" },
+  { id: "cobra-kai", label: "Cobra Kai", src: "/avatars/cobra-kai.png" },
+  { id: "gladiator", label: "Gladiator II", src: "/avatars/gladiator.png" },
 ];
