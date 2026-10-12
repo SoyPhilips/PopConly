@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { allTitles } from "./findTitle";
 import { slugify } from "./slugs";
 
-const SITE = "https://popconly.tv";
+const SITE =
+  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://popconly.com").replace(/\/$/, "");
 
 const PAGES: Record<string, { title: string; description: string; path: string }> = {
   browse: {
