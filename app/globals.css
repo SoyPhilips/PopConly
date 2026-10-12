@@ -57,6 +57,13 @@ body {
   font-family: "Material Symbols Outlined";
   font-weight: normal;
   font-style: normal;
+  /* Instancia explícita de la variable: evita que algún navegador
+     no resuelva el glifo y pinte el nombre del icono como texto. */
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
@@ -65,6 +72,16 @@ body {
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Nunca mostrar los nombres de iconos como texto: ocultos hasta que la
+   fuente confirma carga (o 2.5s y se muestran igual como respaldo). */
+.material-symbols-outlined {
+  visibility: hidden;
+}
+html.fonts-ready .material-symbols-outlined,
+html.fonts-fallback .material-symbols-outlined {
+  visibility: visible;
 }
 
 /* Like con pop + relleno */

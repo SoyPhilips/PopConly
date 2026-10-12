@@ -207,15 +207,6 @@ export default function SignupPayment() {
             {busy ? "Procesando..." : "Iniciar membresía"}
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
-          {pendingTx && (
-            <button
-              type="button"
-              onClick={() => router.push("/browse")}
-              className="w-full py-2.5 rounded-md bg-white/10 hover:bg-white/20 text-sm font-semibold transition-colors cursor-pointer"
-            >
-              Entrar al catálogo
-            </button>
-          )}
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 flex flex-col gap-2">
             <p className="text-sm font-bold">¿Ya pagaste por Wompi?</p>
             <p className="text-xs text-white/60 -mt-1">
@@ -232,6 +223,15 @@ export default function SignupPayment() {
                 <span className="material-symbols-outlined text-sm">check_circle</span>
                 Reporte enviado. Lo revisamos y activamos tu membresía.
               </p>
+            )}
+            {(reportedWompi || pendingTx) && (
+              <button
+                type="button"
+                onClick={() => router.push("/browse")}
+                className="w-full py-2.5 rounded-md bg-[#e50914] hover:bg-[#f6121d] text-white text-sm font-semibold transition-colors cursor-pointer"
+              >
+                Entrar al catálogo
+              </button>
             )}
             <button
               type="button"

@@ -69,13 +69,14 @@ export default function SignupPassword() {
         <p className="text-sm text-white/70">Tampoco nos gustan los trámites.</p>
 
         <form onSubmit={submit} className="flex flex-col gap-3 mt-6">
-          <label className="flex flex-col border border-white/25 focus-within:border-[#ff5262] rounded px-3 pt-1.5 pb-2 bg-white/[0.03]">
-            <span className="text-[11px] text-white/50">Email (verificado, no editable)</span>
+          <label className="flex flex-col border border-white/10 rounded px-3 pt-1.5 pb-2 bg-white/[0.02] cursor-not-allowed select-none" title="Verificado, no editable">
+            <span className="text-[11px] text-white/40">Email (verificado, no editable)</span>
             <input
               value={shownEmail}
               readOnly
+              tabIndex={-1}
               type="email"
-              className="bg-transparent text-[15px] focus:outline-none placeholder:text-white/30 text-white/80"
+              className="bg-transparent text-[15px] focus:outline-none placeholder:text-white/30 text-white/50 cursor-not-allowed"
               placeholder="tucorreo@ejemplo.com"
             />
           </label>
