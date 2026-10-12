@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* Iconos autohospedados: sin dependencia del CDN en recargas fuertes */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url("/fonts/material-symbols-outlined.woff2") format("woff2");
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-void: #0d0d11;
+  --color-surface: #131317;
+  --color-surface-lowest: #0e0e12;
+  --color-surface-low: #1b1b1f;
+  --color-surface-container: #1f1f23;
+  --color-surface-high: #2a292e;
+  --color-surface-highest: #353439;
+  --color-surface-bright: #39393d;
+
+  --color-on-surface: #e4e1e7;
+  --color-on-variant: #e7bcbc;
+
+  --color-primary: #ffb3b3;
+  --color-primary-container: #ff5262;
+  --color-primary-deep: #ff2a4d;
+
+  --color-amber: #feb700;
+  --color-amber-bright: #ffba20;
+
+  --color-violet: #c9bfff;
+  --color-violet-container: #917eff;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0d0d11;
+  color: #e4e1e7;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  overscroll-behavior: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Like con pop + relleno */
+@keyframes like-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.like-pop {
+  animation: like-pop 0.45s ease;
+}
+
+/* Plus que se convierte en chulito (adaptación del checkbox animado) */
+.morph-btn {
+  cursor: pointer;
+}
+
+.morph-btn svg {
+  overflow: visible;
+}
+
+.morph-plus {
+  transition: opacity 0.25s ease, transform 0.3s ease;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.morph-btn[data-on="true"] .morph-plus {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.3);
+}
+
+.morph-tick {
+  fill: none;
+  stroke: white;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.45s ease 0.05s;
+}
+
+.morph-btn[data-on="true"] .morph-tick {
+  stroke-dashoffset: 0;
+}
+
+/* Vista previa de búsqueda: aparición suave */
+@keyframes preview-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.preview-in {
+  animation: preview-in 0.22s ease-out;
+}
+
+/* Héroe inteligente: cuando el algoritmo reemplaza la portada, entra con
+   fundido cinematográfico en vez de un corte seco */
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hero-fade {
+  animation: hero-fade 0.7s ease-out;
+}

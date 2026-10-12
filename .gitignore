@@ -1,0 +1,19 @@
+# Dependencias
+/node_modules/
+
+# Next.js
+/.next/
+/out/
+
+# Variables de entorno (con secretos: NUNCA subir el .env)
+.env
+.env*.local
+
+# Medios locales (395 MB de carátulas: se copian aparte, ver README)
+media/
+
+# Logs y sistema
+*.log
+.DS_Store
+coverage/
+*.tsbuildinfo
