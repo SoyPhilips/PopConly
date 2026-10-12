@@ -1,3 +1,3 @@
-# Módulo 1 — Autenticación y cuentas (PostgreSQL)
+# Módulo 2 — Catálogo de contenido (MongoDB)
 
 Rama del equipo. Alcance y archivos en MODULES.md.
