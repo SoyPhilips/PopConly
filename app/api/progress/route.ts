@@ -119,6 +119,15 @@ export async function PUT(req: Request) {
       JSON.stringify({ pos: Math.floor(body.pos), total: Math.floor(body.total), at: Date.now() })
     );
     await r.expire(k, 60 * 60 * 24 * 365);
+    // Lo nuevo visto cambia el Top global y los recomendados: se invalidan
+    // para que se recalculen (el Top 5 reacciona en la siguiente carga).
+    try {
+      await r.del("popconly:top:global");
+      const prof = (profileOf(req, body) || "Principal").toLowerCase().slice(0, 32);
+      await r.del(`popconly:recs:${userId}:${prof}`);
+    } catch {
+      /* mejor esfuerzo */
+    }
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(redisUnavailable(), { status: 503 });

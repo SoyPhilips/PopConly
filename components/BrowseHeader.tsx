@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import Logo from "./Logo";
-import { AVATAR_URL } from "@/lib/images";
+import ProfileAvatar from "./ProfileAvatar";
 
 type Props = {
   query: string;
@@ -263,11 +263,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
             }}
             aria-label="Mi Perfil"
           >
-            <img
-              src={session?.user?.image || AVATAR_URL}
-              alt="Perfil"
-              className="w-10 h-10 rounded-full object-cover border border-white/20 hover:border-white/60 transition-colors"
-            />
+            <ProfileAvatar className="w-10 h-10 text-lg border border-white/20 hover:border-white/60 transition-colors" />
           </button>
           {avatarOpen && (
             <>

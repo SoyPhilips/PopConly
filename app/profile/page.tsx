@@ -5,12 +5,13 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import BrowseHeader from "@/components/BrowseHeader";
 import BrowseFooter from "@/components/BrowseFooter";
-import { PROFILE_PHOTO_URL } from "@/lib/images";
+import AvatarFace from "@/components/AvatarFace";
+import AvatarPicker from "@/components/AvatarPicker";
 import { PLANS } from "@/lib/plans";
 import { loadMyList } from "@/lib/myListStore";
 import { getActiveProfile, setActiveProfile as persistActiveProfile } from "@/lib/activeProfile";
 
-type DbProfile = { id: string; name: string; kind: string };
+type DbProfile = { id: string; name: string; kind: string; avatar?: string | null };
 
 const FALLBACK_PROFILES = [
   { name: "Principal", sub: "Perfil principal", subClass: "text-[#e7bcbc]", kind: "photo" },
@@ -32,6 +33,8 @@ export default function ProfilePage() {
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
   const [activeProfile, setActiveProfile] = useState("");
   const [dbProfiles, setDbProfiles] = useState<DbProfile[] | null>(null);
   const [profilesDone, setProfilesDone] = useState(false);
@@ -63,7 +66,31 @@ export default function ProfilePage() {
     setEditing(true);
   };
 
-  // Guarda el nombre en la base de datos del perfil (PUT /api/profiles).
+  // Guarda el avatar en la DB del perfil (PUT /api/profiles).
+  const saveAvatar = async (src: string | null) => {
+    if (!activeDb) {
+      setAvatarOpen(false);
+      return;
+    }
+    setAvatarSaving(true);
+    try {
+      const r = await fetch("/api/profiles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: activeDb.id, avatar: src }),
+      });
+      if (r.ok) {
+        setDbProfiles((prev) =>
+          (prev ?? []).map((p) => (p.id === activeDb.id ? { ...p, avatar: src } : p))
+        );
+      }
+    } catch {
+      /* sin conexión */
+    } finally {
+      setAvatarSaving(false);
+      setAvatarOpen(false);
+    }
+  };
   const saveName = async () => {
     setEditing(false);
     const clean = draft.trim().slice(0, 24);
@@ -128,11 +155,12 @@ export default function ProfilePage() {
     })();
   }, []);
 
-  const profiles: { name: string; kind: string; sub: string; subClass: string }[] = (
+  const profiles: { name: string; kind: string; sub: string; subClass: string; avatar?: string | null }[] = (
     dbProfiles ?? FALLBACK_PROFILES
   ).map((p) => ({
     name: p.name,
     kind: p.kind,
+    avatar: "avatar" in p ? (p.avatar as string | null) ?? null : null,
     sub: "sub" in p && typeof p.sub === "string" ? p.sub : "Perfil",
     subClass:
       "subClass" in p && typeof p.subClass === "string" ? p.subClass : "text-[#e7bcbc]",
@@ -204,11 +232,20 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <div className="relative flex-shrink-0">
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden p-1 bg-gradient-to-tr from-[#ff5262] via-[#353439] to-[#feb700] shadow-[0_0_24px_rgba(255,82,98,0.35)]">
-                    <img alt={`Avatar de ${displayName}`} className="w-full h-full rounded-full object-cover" src={session?.user?.image || PROFILE_PHOTO_URL} />
+                    <AvatarFace
+                      name={displayName}
+                      avatar={activeDb?.avatar ?? null}
+                      className="w-full h-full text-4xl"
+                    />
                   </div>
-                  <span className="absolute bottom-1 right-1 flex items-center justify-center w-7 h-7 bg-[#0e0e12] text-[#feb700] rounded-full shadow-md" title="Cuenta Verificada">
-                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                  </span>
+                  <button
+                    onClick={() => setAvatarOpen(true)}
+                    title="Cambiar avatar"
+                    aria-label="Cambiar avatar"
+                    className="absolute bottom-1 right-1 flex items-center justify-center w-7 h-7 bg-[#0e0e12] text-[#feb700] rounded-full shadow-md hover:scale-110 transition-transform cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">photo_camera</span>
+                  </button>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-3">
@@ -306,8 +343,10 @@ export default function ProfilePage() {
                         ? "bg-gradient-to-b from-[#ff5262] to-[#353439] shadow-[0_0_20px_rgba(255,82,98,0.4)]"
                         : "bg-[#353439]"
                     }`}>
-                      {p.kind === "photo" ? (
-                        <img alt={p.name} className="w-full h-full rounded-lg object-cover group-hover:scale-105 transition-transform duration-300" src={PROFILE_PHOTO_URL} />
+                      {p.avatar ? (
+                        <img alt={p.name} src={p.avatar} loading="lazy" className="w-full h-full rounded-lg object-cover object-top group-hover:scale-105 transition-transform duration-300" />
+                      ) : p.kind === "photo" ? (
+                        <AvatarFace name={p.name} avatar={null} className="w-full h-full text-2xl" rounded="rounded-lg" />
                       ) : (
                         <span className="w-full h-full rounded-lg bg-[#353439] flex items-center justify-center">
                           <span className={`material-symbols-outlined text-4xl ${vis.cls}`}>
@@ -665,6 +704,15 @@ export default function ProfilePage() {
       </div>
 
       <BrowseFooter />
+      {avatarOpen && (
+        <AvatarPicker
+          name={displayName}
+          current={activeDb?.avatar ?? null}
+          saving={avatarSaving}
+          onPick={saveAvatar}
+          onClose={() => setAvatarOpen(false)}
+        />
+      )}
     </div>
   );
 }
