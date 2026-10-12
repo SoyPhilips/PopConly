@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { CatalogItem } from "@/lib/catalog";
 import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
+import CoverImg from "./CoverImg";
 import { LikeButton, PlusCheckButton } from "./ActionButtons";
 import YoutubePlayer from "./YoutubePlayer";
 import { warmTrailer } from "@/lib/preloadTrailer";
@@ -98,11 +99,9 @@ export function SearchCard({
         className="block w-full aspect-video rounded-lg overflow-hidden bg-[#1b1b1f] cursor-pointer group"
       >
         <span className="relative block w-full h-full">
-          <img
+          <CoverImg
             src={thumb(item.image, 640)}
             alt={item.title}
-            loading="lazy"
-            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
@@ -124,7 +123,7 @@ export function SearchCard({
           className="preview-in absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] w-[136%] z-40 rounded-xl overflow-hidden bg-[#1b1b1f] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.8)] cursor-pointer"
         >
           <div className="relative aspect-video">
-            <img src={thumb(item.image, 640)} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <CoverImg src={thumb(item.image, 640)} alt="" wrapperClassName="absolute inset-0" className="w-full h-full object-cover" />
             {expanded && item.trailerYoutube ? (
               <YoutubePlayer
                 videoId={item.trailerYoutube}

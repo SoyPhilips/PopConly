@@ -7,6 +7,8 @@ import BrowseFooter from "@/components/BrowseFooter";
 import SearchResults from "@/components/SearchResults";
 import TitleModal, { type TitleDetail } from "@/components/TitleModal";
 import { PosterMiniCard } from "@/components/PrototypeCards";
+import CoverImg from "@/components/CoverImg";
+import { thumb } from "@/lib/thumb";
 import { useSearchScroll } from "@/lib/useSearchScroll";
 import { CATEGORIES, CURATED_COLLECTIONS, type Category } from "@/lib/catalog";
 import { allTitles } from "@/lib/findTitle";
@@ -284,9 +286,11 @@ export default function CategoriesPage() {
               onClick={() => selectCategory(c)}
               className="group relative h-96 rounded-xl overflow-hidden cursor-pointer bg-[#2a292e] shadow-2xl transition-all duration-500 hover:-translate-y-1.5 block text-left w-full"
             >
-              <span
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 block"
-                style={{ backgroundImage: `url('${c.image}')` }}
+              <CoverImg
+                src={thumb(c.image, 640)}
+                alt={c.name}
+                wrapperClassName="absolute inset-0"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <span className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-[#0e0e12]/60 to-transparent opacity-90 block" />
               <span className="absolute top-4 left-4 flex items-center gap-2">

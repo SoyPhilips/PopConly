@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import YoutubePlayer from "./YoutubePlayer";
+import CoverImg from "./CoverImg";
 import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
 import { slugify } from "@/lib/slugs";
@@ -123,10 +124,12 @@ function ModalBackdrop({ title, image }: { title: string; image: string }) {
 
   return (
     <div className="relative w-full aspect-[16/9] overflow-hidden rounded-t-2xl bg-black">
-        <img
+        <CoverImg
           src={thumb(image, 1280)}
           alt={title}
-          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          wrapperClassName="absolute inset-0"
+          className="w-full h-full object-cover"
         />
       {showVideo && ytId ? (
         <YoutubePlayer

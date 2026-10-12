@@ -1,6 +1,8 @@
 "use client";
 
 import type { CatalogItem } from "@/lib/catalog";
+import CoverImg from "./CoverImg";
+import { thumb } from "@/lib/thumb";
 
 type CardProps = {
   item: CatalogItem;
@@ -14,10 +16,9 @@ export function PosterCard({ item, onSelect }: CardProps) {
       className="group relative rounded-xl bg-[#1b1b1f] overflow-hidden shadow-md hover:shadow-2xl hover:shadow-[#ff5262]/20 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.04] flex flex-col text-left cursor-pointer"
     >
       <span className="relative w-full aspect-[2/3] overflow-hidden bg-[#0e0e12] block">
-        <img
-          src={item.image}
+        <CoverImg
+          src={thumb(item.image, 256)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
         />
         <span className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-transparent to-transparent opacity-90 pointer-events-none" />
@@ -62,10 +63,9 @@ export function BackdropCard({ item, onSelect }: CardProps) {
       className="group relative flex flex-col bg-[#1b1b1f] rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.04] text-left cursor-pointer"
     >
       <span className="relative w-full aspect-video overflow-hidden block">
-        <img
+        <CoverImg
           src={item.image}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
         />
         <span className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-transparent to-transparent opacity-80 pointer-events-none" />

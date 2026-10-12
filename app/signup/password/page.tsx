@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import SignupChrome, { useFlowParams, withParams } from "@/components/SignupChrome";
 import { registerUser } from "@/lib/actions";
 
 export default function SignupPassword() {
   const { email: initialEmail } = useFlowParams();
+  const { data: session } = useSession();
   const [email, setEmail] = useState("");
   const [storedEmail, setStoredEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +17,8 @@ export default function SignupPassword() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
-  const shownEmail = email || initialEmail || storedEmail;
+  // Tras el link mágico ya hay sesión: el correo sale escrito siempre.
+  const shownEmail = email || initialEmail || session?.user?.email || storedEmail;
 
   useEffect(() => {
     setStoredEmail(localStorage.getItem("popconly:pending-email") ?? "");

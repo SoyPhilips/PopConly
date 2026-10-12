@@ -9,6 +9,7 @@ import BrowseHeader from "@/components/BrowseHeader";
 import TitleModal, { type TitleDetail } from "@/components/TitleModal";
 import SearchResults from "@/components/SearchResults";
 import { PosterMiniCard } from "@/components/PrototypeCards";
+import CoverImg from "@/components/CoverImg";
 import { LikeButton, PlusCheckButton } from "@/components/ActionButtons";
 import { useSearchScroll } from "@/lib/useSearchScroll";
 import { allTitles } from "@/lib/findTitle";
@@ -389,11 +390,10 @@ export default function BrowsePage() {
                   className="group relative flex flex-col bg-[#1b1b1f] rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.04] text-left cursor-pointer"
                 >
                   <div className="relative w-full aspect-video overflow-hidden">
-                    <img
+                    <CoverImg
                       src={thumb(c.image, 640)}
                       alt={c.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-transparent to-transparent opacity-80 pointer-events-none" />
                     <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/80 text-[10px] font-bold backdrop-blur-sm">
@@ -537,11 +537,10 @@ export default function BrowsePage() {
                   {t.rank}
                 </span>
                 <span className="relative z-10 w-full aspect-[2/3] rounded-xl overflow-hidden shadow-2xl bg-[#1b1b1f] transition-all duration-300 group-hover:scale-[1.05] group-hover:shadow-[0_20px_40px_rgba(255,42,77,0.3)] block">
-                  <img
-                    src={thumb(t.image, 640)}
+                  <CoverImg
+                    src={thumb(t.image, 256)}
                     alt={t.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    loading="lazy"
                   />
                   <span className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-[#0D0D11]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 text-left">
                     <span className="text-[#ffba20] font-bold text-[10px] flex items-center gap-1">
@@ -600,11 +599,10 @@ export default function BrowsePage() {
                 className="group relative flex flex-col bg-[#1b1b1f] rounded-xl overflow-hidden shadow-lg transition-all hover:scale-[1.03] cursor-pointer text-left"
               >
                 <span className="relative w-full aspect-video overflow-hidden block">
-                  <img
+                  <CoverImg
                     src={thumb(r.image, 640)}
                     alt={r.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    loading="lazy"
                   />
                   <span className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-transparent to-transparent pointer-events-none" />
                   <span className="absolute top-3 left-3 flex items-center gap-2">

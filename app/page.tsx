@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
+import CoverImg from "@/components/CoverImg";
 import { thumb } from "@/lib/thumb";
 import { checkUser } from "@/lib/actions";
 import TitleModal, { type TitleDetail } from "@/components/TitleModal";
@@ -248,11 +249,10 @@ export default function LandingPage() {
                 className="group relative rounded-xl bg-[#1b1b1f] overflow-hidden shadow-md hover:shadow-2xl hover:shadow-[#ff5262]/20 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.04] flex flex-col text-left cursor-pointer"
               >
                 <div className="relative w-full aspect-[2/3] overflow-hidden bg-[#0e0e12]">
-                  <img
+                  <CoverImg
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    src={thumb(c.image, 640)}
+                    src={thumb(c.image, 256)}
                     alt={c.alt}
-                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-transparent to-transparent opacity-90 pointer-events-none" />
                   <div

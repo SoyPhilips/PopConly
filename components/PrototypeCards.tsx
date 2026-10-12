@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CatalogItem } from "@/lib/catalog";
+import CoverImg from "./CoverImg";
 import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
 import { thumb } from "@/lib/thumb";
@@ -113,10 +114,9 @@ export function CriticsCard({ item, onSelect }: { item: CatalogItem; onSelect: S
       className="group relative flex flex-col bg-[#1b1b1f] rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer snap-start"
     >
       <div className="relative w-full aspect-[16/10] overflow-hidden">
-        <img
+        <CoverImg
           src={thumb(item.image, 640)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b1b1f] via-transparent to-black/30" />
@@ -155,10 +155,9 @@ export function PosterMiniCard({ item, onSelect }: { item: CatalogItem; onSelect
       className="group relative flex flex-col bg-[#1b1b1f] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.03] cursor-pointer"
     >
       <div className="relative w-full aspect-[2/3] overflow-hidden">
-        <img
-          src={thumb(item.posterUrl ?? item.image, 640)}
+        <CoverImg
+          src={thumb(item.posterUrl ?? item.image, 256)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b1b1f] via-transparent to-black/20" />
@@ -198,10 +197,9 @@ export function PanoramicActionCard({ item, onSelect }: { item: CatalogItem; onS
       className="group relative rounded-2xl overflow-hidden bg-[#1b1b1f] shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
     >
       <div className="relative w-full aspect-[21/9] overflow-hidden">
-        <img
+        <CoverImg
           src={thumb(item.image, 640)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b1b1f] via-[#1b1b1f]/40 to-transparent" />
@@ -244,10 +242,9 @@ export function BingeCard({ item, onSelect }: { item: CatalogItem; onSelect: Sel
       className="group relative flex flex-col rounded-xl overflow-hidden bg-[#1b1b1f] shadow-xl hover:shadow-2xl hover:shadow-black/80 transition-all duration-300 cursor-pointer"
     >
       <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#2a292e]">
-        <img
+        <CoverImg
           src={thumb(item.image, 640)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1b1b1f] via-[#1b1b1f]/20 to-transparent" />
@@ -296,10 +293,9 @@ export function MiniseriesCard({ item, onSelect }: { item: CatalogItem; onSelect
       className="group relative flex flex-col rounded-xl overflow-hidden bg-[#1b1b1f] shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
     >
       <div className="relative w-full aspect-[3/4] overflow-hidden">
-        <img
+        <CoverImg
           src={thumb(item.image, 640)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-[#0e0e12]/30 to-transparent" />
@@ -332,10 +328,9 @@ export function WeeklyCard({ item, onSelect }: { item: CatalogItem; onSelect: Se
       className="group relative flex flex-col rounded-xl overflow-hidden bg-[#1b1b1f] shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
     >
       <div className="relative w-full aspect-video overflow-hidden">
-        <img
+        <CoverImg
           src={thumb(item.image, 640)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-transparent to-transparent" />
@@ -381,10 +376,9 @@ export function MyListCard({
   return (
     <div className="group relative flex flex-col rounded-xl overflow-hidden bg-[#1b1b1f] transition-all duration-300 hover:scale-[1.03] hover:z-20 hover:shadow-2xl hover:shadow-[#ff5262]/10">
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#1f1f23]" onClick={() => onSelect(item)}>
-        <img
-          src={thumb(item.posterUrl ?? item.image, 640)}
+        <CoverImg
+          src={thumb(item.posterUrl ?? item.image, 256)}
           alt={item.title}
-          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-[#0e0e12]/30 to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />

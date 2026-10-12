@@ -9,6 +9,7 @@ import SearchResults from "@/components/SearchResults";
 import { thumb } from "@/lib/thumb";
 import { useSearchScroll } from "@/lib/useSearchScroll";
 import { MyListCard } from "@/components/PrototypeCards";
+import CoverImg from "@/components/CoverImg";
 import { loadMyList, saveMyList } from "@/lib/myListStore";
 import { pullFavorites, pushFavorite } from "@/lib/myListSync";
 import { slugify } from "@/lib/slugs";
@@ -271,10 +272,11 @@ export default function MyListPage() {
                 className="flex items-center gap-4 p-3 rounded-xl bg-[#1b1b1f] hover:bg-[#1f1f23] transition-colors"
               >
                 <button onClick={() => open(it)} className="flex items-center gap-4 flex-1 min-w-0 text-left">
-                  <img
+                  <CoverImg
                     src={thumb(it.image, 256)}
                     alt={it.title}
-                    className="w-20 h-28 rounded-lg object-cover shrink-0"
+                    wrapperClassName="w-20 h-28 rounded-lg shrink-0"
+                    className="w-full h-full object-cover"
                   />
                   <span className="min-w-0">
                     <span className="block font-semibold truncate">{it.title}</span>
@@ -323,10 +325,9 @@ export default function MyListPage() {
                   className="group rounded-xl overflow-hidden bg-[#1b1b1f] text-left hover:scale-[1.03] transition-transform"
                 >
                   <span className="block aspect-video overflow-hidden">
-                    <img
+                    <CoverImg
                       src={thumb(r.image, 640)}
                       alt={r.title}
-                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   </span>

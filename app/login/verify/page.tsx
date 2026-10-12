@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Logo from "@/components/Logo";
 import { useFlowParams } from "@/components/SignupChrome";
 
 export default function LoginVerifyPage() {
   const { email: queryEmail } = useFlowParams();
+  const { data: session } = useSession();
   const [storedEmail, setStoredEmail] = useState("");
   const [resent, setResent] = useState(false);
   const [resending, setResending] = useState(false);
@@ -18,7 +19,9 @@ export default function LoginVerifyPage() {
     setStoredEmail(localStorage.getItem("popconly:pending-email") ?? "");
   }, []);
 
-  const email = queryEmail || storedEmail;
+  // Tras pulsar el link mágico ya hay sesión: el correo sale escrito
+  // aunque se abra en otro navegador (sin ?email= ni localStorage).
+  const email = queryEmail || session?.user?.email || storedEmail;
 
   const resend = async () => {
     if (!email || resending) return;
