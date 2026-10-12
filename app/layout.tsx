@@ -105,7 +105,7 @@ export default function RootLayout({
           // Muestra iconos solo con la fuente cargada (nunca los nombres).
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var d=function(ok){document.documentElement.classList.add(ok?'fonts-ready':'fonts-fallback')};if(document.fonts&&document.fonts.load){var t=setTimeout(function(){d(false)},2500);document.fonts.load('16px \"Material Symbols Outlined\"','play_arrow').then(function(){clearTimeout(t);d(true)},function(){clearTimeout(t);d(false)})}else{d(false)}}catch(e){try{document.documentElement.classList.add('fonts-fallback')}catch(_){}}})();",
+              "(function(){try{var d=function(ok){document.documentElement.classList.add(ok?'fonts-ready':'fonts-fallback')};if(document.fonts&&document.fonts.load){var t=setTimeout(function(){d(false)},6000);document.fonts.load('16px \"Material Symbols Outlined\"','play_arrow').then(function(){clearTimeout(t);d(true)},function(){clearTimeout(t);d(false)})}else{d(false)}}catch(e){try{document.documentElement.classList.add('fonts-fallback')}catch(_){}}})();",
           }}
         />
         <script
