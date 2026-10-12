@@ -1,0 +1,93 @@
+# Cinta transportadora: falla rápido ante lint, tipos, tests o build rotos.
+# Corre en main y en las 4 ramas de módulos.
+name: CI
+
+on:
+  push:
+    branches: [main, "modulo-*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: popconly
+          POSTGRES_PASSWORD: popconly
+          POSTGRES_DB: popconly_auth
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U popconly -d popconly_auth"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpopconly
+          MYSQL_DATABASE: popconly_billing
+          MYSQL_USER: popconly
+          MYSQL_PASSWORD: popconly
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -u root -prootpopconly"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://popconly:popconly@localhost:5432/popconly_auth?schema=public
+      MONGODB_URI: mongodb://localhost:27017/popconly_catalog
+      REDIS_URL: redis://localhost:6379
+      MYSQL_URL: mysql://popconly:popconly@localhost:3306/popconly_billing
+      AUTH_SECRET: ci-secreto-de-prueba
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar
+        run: npm ci
+
+      - name: Lint (análisis estático)
+        run: npm run lint
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Tests unitarios
+        run: npm test
+
+      - name: Migrar Postgres
+        run: npx prisma migrate deploy
+
+      - name: Sembrar catálogo (Mongo)
+        run: npm run db:seed:catalog
+
+      - name: Build producción
+        run: npm run build
+
+      - name: Humo de contrato (app real + DBs)
+        run: |
+          npm run start -- -p 3000 &
+          SRV=$!
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/ >/dev/null && break || sleep 5
+          done
+          BASE_URL=http://localhost:3000 npm run test:smoke
+          kill $SRV
