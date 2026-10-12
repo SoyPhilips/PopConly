@@ -1,3 +1,3 @@
-# Módulo 2 — Catálogo de contenido (MongoDB)
+# Módulo 3 — Historial y recomendaciones (Redis)
 
 Rama del equipo. Alcance y archivos en MODULES.md.
