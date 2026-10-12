@@ -107,6 +107,10 @@ services:
       WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
       WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
       WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+    # Carátulas: SIN esto /api/stream responde 404 (el contenedor no ve el disco).
+    # En dev local sobra (Next corre en el host), en Oracle es obligatorio.
+    volumes:
+      - ./media:/opt/popconly/media
     ports:
       - "127.0.0.1:3000:3000"
     healthcheck:
