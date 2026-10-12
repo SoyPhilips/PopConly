@@ -2,6 +2,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+# El postinstall (prisma generate) necesita el schema presente.
+COPY prisma ./prisma
 RUN npm ci
 
 FROM node:22-alpine AS builder
