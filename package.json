@@ -12,6 +12,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed:catalog": "tsx scripts/seed-catalog.ts",
     "trailers:sync": "tsx scripts/sync-trailers.ts",
+    "trailers:clear-miss": "tsx scripts/clear-miss.ts",
     "thumbs:warm": "tsx scripts/warm-thumbs.ts",
     "test": "tsx --test tests/*.test.ts",
     "test:smoke": "node scripts/smoke.mjs"

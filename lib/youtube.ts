@@ -171,16 +171,30 @@ export async function findTrailer(
       items?: {
         id?: string;
         snippet?: { title?: string; channelTitle?: string };
-        contentDetails?: { duration?: string };
+        contentDetails?: {
+          duration?: string;
+          regionRestriction?: { allowed?: string[]; blocked?: string[] };
+        };
         status?: { embeddable?: boolean };
       }[];
     } | null;
 
+    // Solo candidatos reproducibles para la audiencia (Colombia): embebibles,
+    // con duración y SIN bloqueo regional en CO. El sync puede correr en
+    // cualquier región (ej. servidor en EE. UU.) sin traer videos vetados aquí.
+    const blockedHere = (v: { contentDetails?: { regionRestriction?: { allowed?: string[]; blocked?: string[] } } }) => {
+      const rr = v.contentDetails?.regionRestriction;
+      if (!rr) return false;
+      if (rr.blocked?.includes("CO")) return true;
+      if (rr.allowed && !rr.allowed.includes("CO")) return true;
+      return false;
+    };
     const playable = (vData?.items ?? []).filter(
       (v) =>
         v.id &&
         v.id !== currentId &&
         v.status?.embeddable !== false &&
+        !blockedHere(v) &&
         isoDurationToSecs(v.contentDetails?.duration ?? "") > 0
     );
     // Se prefiere duración de trailer real (30s–4min): evita compilaciones
