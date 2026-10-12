@@ -19,6 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
     verifyRequest: "/login/verify",
     newUser: "/signup/password",
+    error: "/login/error",
   },
   providers: [
     Nodemailer({
@@ -33,6 +34,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       from: process.env.SMTP_FROM ?? "PopConly <cuentas@popconly.com>",
       sendVerificationRequest: async ({ identifier, url }) => {
+        // Borrón y cuenta nueva: si hay un intento INCOMPLETO (clic mágico
+        // viejo sin contraseña), se olvida por completo (usuario + tokens
+        // viejos) para empezar limpio. Las cuentas CON contraseña jamás se tocan.
+        try {
+          const email = identifier.toLowerCase().trim();
+          const stale = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, passwordHash: true },
+          });
+          if (stale && !stale.passwordHash) {
+            await prisma.user.delete({ where: { id: stale.id } });
+            await prisma.verificationToken.deleteMany({
+              where: {
+                OR: [
+                  { identifier: `otp:${email}` },
+                  {
+                    identifier: email,
+                    expires: { lt: new Date(Date.now() + 23 * 3600 * 1000) },
+                  },
+                ],
+              },
+            });
+          }
+        } catch {
+          /* sigue el flujo normal */
+        }
         await sendMail(
           identifier,
           "Completa tu registro en PopConly",

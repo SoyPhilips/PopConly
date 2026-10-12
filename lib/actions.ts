@@ -50,7 +50,7 @@ export async function requestLoginCode(email: string) {
   const user = await prisma.user.findUnique({ where: { email: clean } });
   if (!user) return { ok: false as const, error: "Esta cuenta no existe. Regístrate primero." };
   if (!user.passwordHash) {
-    return { ok: false as const, error: "Termina tu registro con el enlace del correo primero." };
+    return { ok: false as const, error: "Ese intento quedó incompleto. Pide un enlace nuevo desde Iniciar sesión." };
   }
   const code = String(randomInt(100000, 1000000));
   const token = await bcrypt.hash(code, 10);
