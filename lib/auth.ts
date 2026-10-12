@@ -31,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           pass: process.env.SMTP_PASS || "popconly",
         },
       },
-      from: process.env.SMTP_FROM ?? "PopConly <cuentas@popconly.tv>",
+      from: process.env.SMTP_FROM ?? "PopConly <cuentas@popconly.com>",
       sendVerificationRequest: async ({ identifier, url }) => {
         await sendMail(
           identifier,
@@ -54,6 +54,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email) return null;
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
+        // Sin contraseña no hay entrada: la cuenta nace al ponerla en
+        // /signup/password (el clic mágico solo verifica el correo).
+        if (!user.passwordHash) return null;
         // Código de verificación de un solo uso (login con cuenta existente).
         if (code) {
           const candidates = await prisma.verificationToken.findMany({

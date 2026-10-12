@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
 import { prisma } from "./prisma";
+import { auth } from "./auth";
 import { sendMail } from "./mail";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -19,6 +20,13 @@ export async function registerUser(email: string, password: string) {
   if (!EMAIL_RE.test(clean)) return { ok: false as const, error: "Ingresa un email válido." };
   if (password.length < 6)
     return { ok: false as const, error: "La contraseña debe tener al menos 6 caracteres." };
+  // Solo el dueño verificado (sesión del link mágico) puede poner la contraseña.
+  // Sin esto cualquiera le pondría clave a la cuenta de otro.
+  const session = await auth();
+  const sessionEmail = (session?.user?.email ?? "").toLowerCase().trim();
+  if (!sessionEmail || sessionEmail !== clean) {
+    return { ok: false as const, error: "Verifica tu correo con el enlace antes de crear la contraseña." };
+  }
   const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({ where: { email: clean } });
   if (existing) {
@@ -35,12 +43,15 @@ export async function registerUser(email: string, password: string) {
   return { ok: true as const };
 }
 
-/** Envía un código de 6 dígitos al correo (solo cuentas existentes). */
+/** Envía un código de 6 dígitos al correo (solo cuentas COMPLETAS con contraseña). */
 export async function requestLoginCode(email: string) {
   const clean = email.toLowerCase().trim();
   if (!EMAIL_RE.test(clean)) return { ok: false as const, error: "Ingresa un email válido." };
   const user = await prisma.user.findUnique({ where: { email: clean } });
   if (!user) return { ok: false as const, error: "Esta cuenta no existe. Regístrate primero." };
+  if (!user.passwordHash) {
+    return { ok: false as const, error: "Termina tu registro con el enlace del correo primero." };
+  }
   const code = String(randomInt(100000, 1000000));
   const token = await bcrypt.hash(code, 10);
   await prisma.verificationToken.deleteMany({ where: { identifier: `otp:${clean}` } });
