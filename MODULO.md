@@ -1,3 +1,3 @@
-# Módulo 3 — Historial y recomendaciones (Redis)
+# Módulo 4 — Suscripciones y pagos (MySQL)
 
 Rama del equipo. Alcance y archivos en MODULES.md.
