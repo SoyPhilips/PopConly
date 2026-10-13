@@ -68,11 +68,60 @@ export default function MoviesPage() {
     return a;
   };
 
-  const [acclaimed, launches, specials] = useMemo(
-    () => MOVIE_ROWS.map((r) => sortItems(r.items.filter(matches))),
+  // Filas reales desde la DB (/api/rows); sin ellas, vitrina local.
+  const [rowsBase, setRowsBase] = useState<{
+    acclaimed: CatalogItem[];
+    launches: CatalogItem[];
+    specials: CatalogItem[];
+  } | null>(null);
+  const [launchesTotal, setLaunchesTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const get = async (qs: string) => {
+          const r = await fetch(`/api/rows?${qs}`);
+          if (!r.ok) return null;
+          return (await r.json()) as { items?: CatalogItem[]; total?: number };
+        };
+        const [a, l, s] = await Promise.all([
+          get(`type=${encodeURIComponent("Película")}&limit=120`),
+          get(`year=2026&type=${encodeURIComponent("Película")}&limit=200`),
+          get(`genre=${encodeURIComponent("Acción")}&type=${encodeURIComponent("Película")}&limit=60`),
+        ]);
+        if (!cancelled && a?.items?.length && l?.items?.length && s?.items?.length) {
+          const byRating = (arr: CatalogItem[]) =>
+            [...arr].sort((x, y) => parseFloat(y.rating ?? "0") - parseFloat(x.rating ?? "0"));
+          setRowsBase({
+            acclaimed: byRating(a.items).slice(0, 12),
+            launches: l.items.slice(0, 12),
+            specials: s.items.slice(0, 4),
+          });
+          setLaunchesTotal(typeof l.total === "number" ? l.total : l.items.length);
+        }
+      } catch {
+        /* vitrina local */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const [acclaimed, launches, specials] = useMemo(() => {
+    const base = rowsBase ?? {
+      acclaimed: MOVIE_ROWS[0].items,
+      launches: MOVIE_ROWS[1].items,
+      specials: MOVIE_ROWS[2].items,
+    };
+    return [
+      sortItems(base.acclaimed.filter(matches)),
+      sortItems(base.launches.filter(matches)),
+      sortItems(base.specials.filter(matches)),
+    ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [query, filter, sort]
-  );
+  }, [query, filter, sort, rowsBase]);
 
   const open = (item: CatalogItem) =>
     setSelected({
@@ -221,7 +270,17 @@ export default function MoviesPage() {
             </div>
           </div>
           <div ref={sliderRef} className="grid grid-flow-col auto-cols-[82%] sm:auto-cols-[45%] lg:auto-cols-[30%] xl:auto-cols-[23.5%] gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
-            {acclaimed.map((item) => (
+            {rowsBase === null
+              ? [0, 1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-xl overflow-hidden bg-[#1b1b1f] animate-pulse snap-start">
+                    <div className="w-full aspect-[16/10] bg-[#2a292e]" />
+                    <div className="p-4 flex flex-col gap-2">
+                      <div className="h-3 w-1/3 rounded bg-[#2a292e]" />
+                      <div className="h-4 w-2/3 rounded bg-[#2a292e]" />
+                    </div>
+                  </div>
+                ))
+              : acclaimed.map((item) => (
               <CriticsCard key={item.title} item={item} onSelect={open} />
             ))}
           </div>
@@ -238,14 +297,26 @@ export default function MoviesPage() {
               <h2 className="text-[28px] font-bold tracking-tight">Lanzamientos 2026</h2>
             </div>
             <Link href="/search?q=2026" className="text-sm text-[#ffb3b3] hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-              Ver todos (48)
+              Ver todos ({launchesTotal ?? 48})
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {launches.map((item) => (
+            {rowsBase === null ? (
+              [0, 1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="rounded-xl overflow-hidden bg-[#1b1b1f] animate-pulse">
+                  <div className="w-full aspect-[2/3] bg-[#2a292e]" />
+                  <div className="p-3 flex flex-col gap-2">
+                    <div className="h-3 w-2/3 rounded bg-[#2a292e]" />
+                    <div className="h-3 w-1/2 rounded bg-[#2a292e]" />
+                  </div>
+                </div>
+              ))
+            ) : (
+            launches.map((item) => (
               <PosterMiniCard key={item.title} item={item} onSelect={open} />
-            ))}
+            ))
+            )}
           </div>
         </section>
 
@@ -261,9 +332,21 @@ export default function MoviesPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {specials.map((item) => (
+            {rowsBase === null ? (
+              [0, 1].map((i) => (
+                <div key={i} className="rounded-2xl overflow-hidden bg-[#1b1b1f] animate-pulse">
+                  <div className="w-full aspect-[21/9] bg-[#2a292e]" />
+                  <div className="p-6 flex flex-col gap-2">
+                    <div className="h-4 w-1/3 rounded bg-[#2a292e]" />
+                    <div className="h-3 w-full rounded bg-[#2a292e]" />
+                  </div>
+                </div>
+              ))
+            ) : (
+            specials.map((item) => (
               <PanoramicActionCard key={item.title} item={item} onSelect={open} />
-            ))}
+            ))
+            )}
           </div>
         </section>
       </div>

@@ -237,8 +237,8 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="mt-4 text-base text-[#e7bcbc] max-w-2xl">
-              Películas ilimitadas, series de culto y producciones originales
-              exclusivas. Cancela cuando quieras desde{" "}
+              Disfruta de los trailers de tus películas y series favoritas.
+              Cancela cuando quieras desde{" "}
               <strong className="text-[#feb700] font-semibold">
                 $4.99/mes
               </strong>
@@ -509,7 +509,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div className="flex items-center gap-3">
               <Logo size="sm" />
-              <span>© 2024 Todos los derechos reservados.</span>
+              <span>© {new Date().getFullYear()} Todos los derechos reservados.</span>
             </div>
             <div className="flex flex-wrap gap-4 text-xs font-semibold">
               <Link href="/legal" className="hover:text-white transition-colors">

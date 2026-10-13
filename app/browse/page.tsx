@@ -926,7 +926,7 @@ export default function BrowsePage() {
             </div>
           </div>
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[#e7bcbc]/80 text-xs">
-            <span>© 2025 PopConly Inc. Todos los derechos reservados.</span>
+            <span>© {new Date().getFullYear()} PopConly Inc. Todos los derechos reservados.</span>
             <div className="flex items-center gap-4">
               <span>Audio Dolby Atmos</span>
               <span>Ultra HD 4K</span>
