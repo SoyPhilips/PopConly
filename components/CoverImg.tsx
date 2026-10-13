@@ -4,7 +4,10 @@ import { useState } from "react";
 
 /** Carátula con esqueleto: gris pulsante hasta que la imagen real carga,
  *  luego fundido suave. Reintenta 3 veces (los picos de miniaturas a veces
- *  tumban alguna suelta); solo entonces muestra icono neutro. */
+ *  tumban alguna suelta); solo entonces muestra icono neutro.
+ *  Si el navegador ya la tiene completa (recarga con caché), onLoad puede
+ *  haberse disparado antes de hidratar: se detecta por ref para no quedar
+ *  invisible para siempre. */
 export default function CoverImg({
   src,
   alt,
@@ -28,6 +31,10 @@ export default function CoverImg({
       {!failed ? (
         <img
           key={attempt}
+          ref={(el) => {
+            // Imagen ya completa desde caché: marcar cargada de inmediato.
+            if (el && el.complete && el.naturalWidth > 0) setLoaded(true);
+          }}
           src={src}
           alt={alt}
           loading={loading}

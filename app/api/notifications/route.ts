@@ -20,6 +20,9 @@ const keyFor = (userId: string, profile: string) =>
   `popconly:notif:${userId}:${profile.toLowerCase().slice(0, 32)}`;
 const seenKeyFor = (userId: string, profile: string) =>
   `popconly:notifseen:${userId}:${profile.toLowerCase().slice(0, 32)}`;
+// Descartadas por el usuario: jamás se regeneran (por usuario+perfil).
+const dismissedKeyFor = (userId: string, profile: string) =>
+  `popconly:notifdismissed:${userId}:${profile.toLowerCase().slice(0, 32)}`;
 
 function profileOf(req: Request, body?: { profile?: string }): string {
   const fromBody = body?.profile?.trim();
@@ -68,6 +71,12 @@ async function ensureFresh(userId: string, profile: string): Promise<NotifItem[]
   }
   const now = Date.now();
   const knownSlugs = new Set(existing.map((n) => n.slug));
+  let dismissed: Set<string>;
+  try {
+    dismissed = new Set(await r.smembers(dismissedKeyFor(userId, profile)));
+  } catch {
+    dismissed = new Set();
+  }
   const fresh: NotifItem[] = [];
 
   // 1. Novedades: trailers sincronizados después de su última visita.
@@ -78,6 +87,7 @@ async function ensureFresh(userId: string, profile: string): Promise<NotifItem[]
       const at = Date.parse(doc.trailerFetchedAt ?? "") || 0;
       const slug = doc.slug;
       if (!at || at <= lastSeen || knownSlugs.has(slug)) continue;
+      if (dismissed.has(`nuevo-${slug}`)) continue;
       fresh.push({
         id: `nuevo-${slug}`,
         kind: "nuevo",
@@ -118,6 +128,7 @@ async function ensureFresh(userId: string, profile: string): Promise<NotifItem[]
           if (fresh.length >= 5) break;
           const slug = slugify(c.title);
           if (seen.has(slug) || knownSlugs.has(slug)) continue;
+          if (dismissed.has(`rec-${slug}`)) continue;
           if (!(c.genres ?? []).some((g) => g.toLowerCase() === top)) continue;
           fresh.push({
             id: `rec-${slug}`,
@@ -159,7 +170,7 @@ export async function GET(req: Request) {
 }
 
 /** POST /api/notifications { profile?, action:"read", id? } |
- *  { profile?, action:"read-all" } */
+ *  { profile?, action:"read-all" } | { profile?, action:"dismiss", id } */
 export async function POST(req: Request) {
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -186,6 +197,22 @@ export async function POST(req: Request) {
       profile,
       list.map((n) => (n.id === body.id ? { ...n, read: true } : n))
     );
+    return NextResponse.json({ ok: true });
+  }
+  // Descartar: elimina la notificación del usuario+perfil para siempre.
+  if (body?.action === "dismiss" && body.id) {
+    const r = getRedis();
+    await writeAll(
+      userId,
+      profile,
+      list.filter((n) => n.id !== body.id)
+    );
+    try {
+      await r?.sadd(dismissedKeyFor(userId, profile), body.id);
+      await r?.expire(dismissedKeyFor(userId, profile), 60 * 60 * 24 * 90);
+    } catch {
+      /* mejor esfuerzo */
+    }
     return NextResponse.json({ ok: true });
   }
   return NextResponse.json({ error: "bad-request" }, { status: 400 });

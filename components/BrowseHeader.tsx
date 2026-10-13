@@ -90,13 +90,31 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
 
   // Estilo plataformas grandes: una notificación queda NO LEÍDA (punto rojo)
   // hasta que se hace clic en ELLA. Abrir la campana no borra nada.
+  // keepalive: el clic navega de inmediato y el navegador cancelaría el
+  // POST normal; así la lectura sí queda guardada en el servidor.
   const markRead = async (id: string) => {
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     try {
       await fetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        keepalive: true,
         body: JSON.stringify({ profile: getActiveProfile(), action: "read", id }),
+      });
+    } catch {
+      /* mejor esfuerzo */
+    }
+  };
+
+  // Descartar con la X: se quita al instante y jamás vuelve (por usuario+perfil).
+  const dismissNotif = async (id: string) => {
+    setNotifs((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({ profile: getActiveProfile(), action: "dismiss", id }),
       });
     } catch {
       /* mejor esfuerzo */
@@ -299,14 +317,14 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                 ) : (
                 <div className="max-h-[60vh] overflow-y-auto">
                 {notifs.map((n) => (
+                  <div key={n.id} className="relative group">
                   <Link
-                    key={n.id}
                     href={`/watch?title=${encodeURIComponent(n.title.replace(/^(Nuevo trailer:\s*|Porque viste [^:]+:\s*)/, ""))}`}
                     onClick={() => {
                       void markRead(n.id);
                       setNotifOpen(false);
                     }}
-                    className="flex gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer"
+                    className="flex gap-3 pl-4 pr-9 py-3 hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     <img
                       src={thumb(n.image, 256)}
@@ -323,6 +341,19 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                       <p className="text-[11px] text-white/40 mt-1">{timeAgo(n.at)}</p>
                     </div>
                   </Link>
+                  <button
+                    aria-label="Descartar notificación"
+                    title="Descartar"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      void dismissNotif(n.id);
+                    }}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 hover:bg-[#e50914] text-white/70 hover:text-white flex items-center justify-center transition-all md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">close</span>
+                  </button>
+                  </div>
                 ))}
                 </div>
                 )}
