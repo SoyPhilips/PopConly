@@ -5,6 +5,7 @@ import Link from "next/link";
 import TitleModal, { type TitleDetail } from "./TitleModal";
 import { SearchCard } from "./SearchCard";
 import type { CatalogItem } from "@/lib/catalog";
+import { useLang } from "@/lib/i18n";
 
 const SUGGESTIONS = ["Ciencia ficción", "Thriller", "Comedia", "2026", "Anime", "Drama"];
 
@@ -21,6 +22,7 @@ export default function SearchResults({
   const [searching, setSearching] = useState(false);
   // Lo más buscado por todos (con respaldo local).
   const [hotSearches, setHotSearches] = useState<string[]>(SUGGESTIONS);
+  const { t } = useLang();
 
   const q = query.trim().toLowerCase();
 
@@ -102,9 +104,9 @@ export default function SearchResults({
     return (
       <div className="rounded-xl bg-[#1b1b1f] p-10 text-center">
         <span className="material-symbols-outlined text-5xl text-white/30">search</span>
-        <p className="font-semibold mt-3">Busca en todo PopConly</p>
+        <p className="font-semibold mt-3">{t("sr_searchTitle")}</p>
         <p className="text-sm text-white/50 mt-1">
-          Títulos, géneros, personas y años de películas y series.
+          {t("sr_searchSub")}
         </p>
         <div className="flex flex-wrap justify-center gap-2 mt-5">
           {hotSearches.map((s) => (
@@ -118,7 +120,7 @@ export default function SearchResults({
           ))}
         </div>
         <Link href="/browse" className="inline-block mt-6 text-xs text-white/60 hover:text-white underline underline-offset-4">
-          Volver al inicio
+          {t("sr_back")}
         </Link>
       </div>
     );
@@ -127,8 +129,8 @@ export default function SearchResults({
   return (
     <>
       {chips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[15px] mb-6">
-          <span className="text-white/50">Más contenido para explorar:</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[15px] mb-6">
+          <span className="text-white/50">{t("sr_more")}</span>
           {chips.map((c, i) => (
             <span key={c} className="flex items-center gap-3">
               {i > 0 && <span className="w-px h-5 bg-white/20" />}
@@ -157,11 +159,11 @@ export default function SearchResults({
             ))}
           </div>
         ) : (
-          <div className="rounded-xl bg-[#1b1b1f] p-10 text-center mt-6">
-            <p className="font-semibold">Sin coincidencias para “{query.trim()}”</p>
-            <p className="text-sm text-white/50 mt-1">
-              Prueba con otro título, género o año.
-            </p>
+        <div className="rounded-xl bg-[#1b1b1f] p-10 text-center mt-6">
+          <p className="font-semibold">{t("sr_noRes")} “{query.trim()}”</p>
+          <p className="text-sm text-white/50 mt-1">
+            {t("sr_try")}
+          </p>
             <div className="flex flex-wrap justify-center gap-2 mt-5">
               {hotSearches.map((s) => (
                 <button
@@ -185,7 +187,7 @@ export default function SearchResults({
           {related.length > 0 && (
             <>
               <p className="text-white/50 text-sm mt-8 mb-3">
-                Más títulos de la misma categoría
+                {t("sr_sameCat")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {related.map((item) => (

@@ -6,55 +6,100 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import Logo from "./Logo";
 import ProfileAvatar from "./ProfileAvatar";
+import { getActiveProfile } from "@/lib/activeProfile";
+import { thumb } from "@/lib/thumb";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   query: string;
   onQueryChange: (q: string) => void;
 };
 
-const NAV = [
-  { href: "/browse", label: "Inicio" },
-  { href: "/movies", label: "Películas" },
-  { href: "/series", label: "Series" },
-  { href: "/categories", label: "Categorías" },
-  { href: "/my-list", label: "Mi Lista" },
-];
+type Notif = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  slug: string;
+  image: string;
+  at: number;
+  read: boolean;
+};
 
-const NOTIFS = [
-  {
-    title: "Nuevo episodio de Fallout",
-    q: "Fallout",
-    desc: "T2:E1 ya disponible en 4K Dolby Vision.",
-    time: "Hace 2 h",
-    img: "/api/stream?file=series/accion/fallout/horizontal.jpg",
-  },
-  {
-    title: "Top 1 hoy: Deadpool & Wolverine",
-    q: "Deadpool & Wolverine",
-    desc: "La película más vista en tu país.",
-    time: "Hace 6 h",
-    img: "/api/stream?file=peliculas/accion/deadpool-wolverine/horizontal.jpg",
-  },
-  {
-    title: "Recién llegado: Ballerina",
-    q: "Ballerina",
-    desc: "Acción original en 4K HDR.",
-    time: "Ayer",
-    img: "/api/stream?file=peliculas/accion/ballerina/horizontal.jpg",
-  },
+function timeAgo(at: number): string {
+  const s = Math.max(0, Math.floor((Date.now() - at) / 1000));
+  if (s < 60) return "Ahora mismo";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `Hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Hace ${h} h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `Hace ${d} d`;
+  return new Date(at).toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+}
+
+const NAV: { href: string; label: "nav_home" | "nav_movies" | "nav_series" | "nav_categories" | "nav_mylist" }[] = [
+  { href: "/browse", label: "nav_home" },
+  { href: "/movies", label: "nav_movies" },
+  { href: "/series", label: "nav_series" },
+  { href: "/categories", label: "nav_categories" },
+  { href: "/my-list", label: "nav_mylist" },
 ];
 
 export default function BrowseHeader({ query, onQueryChange }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
+  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const [notifsDone, setNotifsDone] = useState(false);
+  const hasUnread = notifs.some((n) => !n.read);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Notificaciones reales del perfil (DB + algoritmo). Sin sesión no hay campana.
+  useEffect(() => {
+    if (status !== "authenticated") {
+      setNotifs([]);
+      setNotifsDone(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(
+          `/api/notifications?profile=${encodeURIComponent(getActiveProfile())}`
+        );
+        if (!r.ok) return;
+        const d = (await r.json()) as { items?: Notif[] };
+        if (!cancelled && Array.isArray(d.items)) setNotifs(d.items);
+      } catch {
+        /* sin notificaciones */
+      } finally {
+        if (!cancelled) setNotifsDone(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
+  const markAllRead = async () => {
+    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: getActiveProfile(), action: "read-all" }),
+      });
+    } catch {
+      /* mejor esfuerzo */
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -67,7 +112,8 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
     if (searchOpen) inputRef.current?.focus();
   }, [searchOpen]);
 
-  // Colapsar al tocar fuera o pulsar Escape
+  // Colapsar al tocar fuera o pulsar Escape (Escape además LIMPIA la búsqueda
+  // para volver a la pestaña tal como estaba).
   useEffect(() => {
     if (!searchOpen) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
@@ -76,7 +122,11 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSearchOpen(false);
+      if (e.key === "Escape") {
+        onQueryChange("");
+        setSearchOpen(false);
+        (document.activeElement as HTMLElement | null)?.blur?.();
+      }
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown);
@@ -86,7 +136,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
       document.removeEventListener("touchstart", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [searchOpen]);
+  }, [searchOpen, onQueryChange]);
 
   return (
     <header
@@ -123,7 +173,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                   : "hover:text-white transition-colors"
               }
             >
-              {n.label}
+              {t(n.label)}
             </Link>
           ))}
         </nav>
@@ -140,7 +190,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                   : "hover:text-white whitespace-nowrap"
               }
             >
-              {n.label}
+              {t(n.label)}
             </Link>
           ))}
         </nav>
@@ -158,7 +208,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
             }`}
           >
             <button
-              aria-label="Buscar"
+              aria-label={t("hdr_searchAria")}
               onClick={() => {
                 if (!searchOpen) setSearchOpen(true);
                 else if (!query) setSearchOpen(false);
@@ -181,15 +231,15 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                   router.push(`/search?q=${encodeURIComponent(query.trim())}`);
                 }
               }}
-              placeholder="Títulos, géneros, personas..."
+              placeholder={t("hdr_searchPh")}
               className={`bg-transparent text-sm placeholder:text-white/40 focus:outline-none transition-all duration-300 ${
                 searchOpen ? "w-full pr-3 py-2.5 opacity-100" : "w-0 p-0 opacity-0"
               }`}
             />
             {searchOpen && query && (
-              <button
-                aria-label="Limpiar búsqueda"
-                onClick={() => onQueryChange("")}
+            <button
+              aria-label={t("hdr_clearSearch")}
+              onClick={() => onQueryChange("")}
                 className="pr-2 text-white/50 hover:text-white cursor-pointer"
               >
                 <span className="material-symbols-outlined text-lg">
@@ -200,14 +250,16 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
           </div>
         </div>
 
-        {/* Notificaciones */}
+        {/* Notificaciones (solo con sesión) */}
+        {status === "authenticated" && (
         <div className="relative">
           <button
-            aria-label="Notificaciones"
+            aria-label={t("hdr_notifs")}
             onClick={() => {
-              setNotifOpen((v) => !v);
+              const opening = !notifOpen;
+              setNotifOpen(opening);
               setAvatarOpen(false);
-              setHasUnread(false);
+              if (opening) void markAllRead();
             }}
             className="w-10 h-10 rounded-full bg-[#1b1b1f] border border-white/10 hover:bg-[#2a292e] flex items-center justify-center transition-colors relative"
           >
@@ -226,33 +278,54 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
               />
               <div className="absolute right-0 mt-2 w-[340px] rounded-xl bg-[#1b1b1f] border border-white/10 shadow-2xl z-50 overflow-hidden">
                 <p className="px-4 py-3 text-sm font-bold border-b border-white/10">
-                  Notificaciones
+                  {t("hdr_notifs")}
                 </p>
-                {NOTIFS.map((n) => (
+                {!notifsDone ? (
+                  <div className="flex flex-col gap-3 p-4">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="flex gap-3 animate-pulse">
+                        <div className="w-14 h-14 rounded-lg bg-[#2a292e] shrink-0" />
+                        <div className="flex-1 flex flex-col gap-2 py-1">
+                          <div className="h-3 w-3/4 rounded bg-[#2a292e]" />
+                          <div className="h-3 w-full rounded bg-[#2a292e]" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : notifs.length === 0 ? (
+                  <p className="px-4 py-6 text-xs text-white/50 text-center">
+                    {t("hdr_notifsEmpty")}
+                  </p>
+                ) : (
+                notifs.map((n) => (
                   <Link
-                    key={n.title}
-                    href={`/search?q=${encodeURIComponent(n.q ?? n.title.split(":")[0])}`}
+                    key={n.id}
+                    href={`/watch?title=${encodeURIComponent(n.title.replace(/^(Nuevo trailer:\s*|Porque viste [^:]+:\s*)/, ""))}`}
                     onClick={() => setNotifOpen(false)}
                     className="flex gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     <img
-                      src={n.img}
+                      src={thumb(n.image, 256)}
                       alt=""
+                      loading="lazy"
                       className="w-14 h-14 rounded-lg object-cover shrink-0"
                     />
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold leading-snug">
-                        {n.title}
+                      <p className="text-[13px] font-semibold leading-snug flex items-center gap-1.5">
+                        {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#e50914] shrink-0" />}
+                        <span className="truncate">{n.title}</span>
                       </p>
-                      <p className="text-xs text-white/60 truncate">{n.desc}</p>
-                      <p className="text-[11px] text-white/40 mt-1">{n.time}</p>
+                      <p className="text-xs text-white/60 truncate">{n.body}</p>
+                      <p className="text-[11px] text-white/40 mt-1">{timeAgo(n.at)}</p>
                     </div>
                   </Link>
-                ))}
+                ))
+                )}
               </div>
             </>
           )}
         </div>
+        )}
 
         {/* Avatar */}
         <div className="relative">
@@ -261,7 +334,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
               setAvatarOpen((v) => !v);
               setNotifOpen(false);
             }}
-            aria-label="Mi Perfil"
+            aria-label={t("hdr_profileAria")}
           >
             <ProfileAvatar className="w-10 h-10 text-lg border border-white/20 hover:border-white/60 transition-colors" />
           </button>
@@ -282,14 +355,14 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                   className="block px-4 py-2 hover:bg-white/5"
                   onClick={() => setAvatarOpen(false)}
                 >
-                  Mi perfil
+                  {t("nav_profile")}
                 </Link>
                 <Link
                   href="/my-list"
                   className="block px-4 py-2 hover:bg-white/5"
                   onClick={() => setAvatarOpen(false)}
                 >
-                  Mi lista
+                  {t("nav_mylist")}
                 </Link>
                 <button
                   onClick={() => {
@@ -298,7 +371,7 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                   }}
                   className="block w-full text-left px-4 py-2 hover:bg-white/5 text-white/70 cursor-pointer"
                 >
-                  Cerrar sesión
+                  {t("nav_signout")}
                 </button>
               </div>
             </>

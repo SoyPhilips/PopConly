@@ -21,6 +21,7 @@ import { thumb } from "@/lib/thumb";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { useSmartHero } from "@/lib/useSmartHero";
 import { readRecsCache, sameRecs, writeRecsCache } from "@/lib/recsCache";
+import { useLang } from "@/lib/i18n";
 import type { CatalogItem } from "@/lib/catalog";
 import {
   BROWSE_HERO,
@@ -45,6 +46,7 @@ export default function BrowsePage() {
   });
   const [recsDone, setRecsDone] = useState(false);
   const [needsPlan, setNeedsPlan] = useState(false);
+  const { t } = useLang();
   // Top 5 global y Recién llegados: datos reales (null = cargando → skeletons).
   type TopRow = {
     rank: number;
@@ -341,7 +343,7 @@ export default function BrowsePage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ff5262]/20 text-[#ffb3b3] text-[10px] font-bold tracking-wider uppercase backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-[#ff5262] animate-pulse" />
-                Original de PopConly
+                {t("hero_badgeOrig")}
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2a292e]/60 text-[#ffdb9d] text-[10px] font-bold tracking-wide uppercase backdrop-blur-md">
                 <span
@@ -350,7 +352,7 @@ export default function BrowsePage() {
                 >
                   local_fire_department
                 </span>
-                {personalized && heroReason ? `Porque viste ${heroReason}` : "Top 1 Hoy en tu país"}
+                {personalized && heroReason ? `${t("hero_because")} ${heroReason}` : t("hero_top1")}
               </span>
             </div>
             <h1 className="text-4xl md:text-[56px] md:leading-[64px] font-extrabold tracking-tight uppercase drop-shadow-2xl">
@@ -394,7 +396,7 @@ export default function BrowsePage() {
                 >
                   play_arrow
                 </span>
-                <span>Reproducir</span>
+                <span>{t("hero_play")}</span>
               </Link>
               <button
                 onClick={openHeroInfo}
@@ -403,7 +405,7 @@ export default function BrowsePage() {
                 <span className="material-symbols-outlined text-xl">
                   info
                 </span>
-                <span className="font-semibold">Más información</span>
+                <span className="font-semibold">{t("hero_info")}</span>
               </button>
               <PlusCheckButton
                 key={`hero-pc-${hero.title}-${heroInList}`}
@@ -435,14 +437,13 @@ export default function BrowsePage() {
         {needsPlan && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-[#feb700]/40 bg-[#feb700]/10 px-4 py-3">
             <p className="text-sm">
-              <span className="font-bold">Activa tu membresía</span> para seguir
-              viendo sin límites.
+              <span className="font-bold">{t("row_needsPlan1")}</span> {t("row_needsPlan2")}
             </p>
             <Link
               href="/signup/planes"
               className="px-5 py-2 rounded-lg bg-[#e50914] hover:bg-[#f6121d] text-sm font-semibold whitespace-nowrap cursor-pointer"
             >
-              Ver planes
+              {t("row_viewPlans")}
             </Link>
           </div>
         )}
@@ -454,14 +455,14 @@ export default function BrowsePage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-6 rounded-full bg-[#ff5262]" />
               <h2 className="text-xl font-semibold tracking-tight">
-                Continuar Viendo para Ti
+                {t("row_continue")}
               </h2>
             </div>
             <Link
               href="/my-list"
               className="group flex items-center gap-1 text-sm text-[#ffb3b3] hover:text-[#ffb3b3]"
             >
-              <span>Ver todo</span>
+              <span>{t("row_seeAll")}</span>
               <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">
                 chevron_right
               </span>
@@ -483,8 +484,8 @@ export default function BrowsePage() {
           ) : filteredContinue.length === 0 ? (
             <p className="text-sm text-white/50">
               {continueEmptyHint
-                ? "Reproduce un trailer y tu avance aparecerá aquí con la línea roja real."
-                : "Sin coincidencias en esta fila."}
+                ? t("row_emptyContinue")
+                : t("row_noMatch")}
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -577,11 +578,11 @@ export default function BrowsePage() {
               <span className="w-1.5 h-6 rounded-full bg-[#c9bfff]" />
               <div>
                 <h2 className="text-xl font-semibold tracking-tight">
-                  Recomendado para ti
+                  {t("row_recs")}
                 </h2>
                 {recs.reason && (
                   <p className="text-xs text-[#e7bcbc]">
-                    Porque viste {recs.reason}
+                    {t("row_because")} {recs.reason}
                   </p>
                 )}
               </div>
@@ -617,7 +618,7 @@ export default function BrowsePage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-6 rounded-full bg-[#ffba20]" />
               <h2 className="text-xl font-semibold tracking-tight">
-                Top 5 Más Vistos en PopConly
+                {t("row_top5")}
               </h2>
             </div>
             <div className="flex items-center gap-2">
@@ -702,11 +703,11 @@ export default function BrowsePage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-6 rounded-full bg-[#c9bfff]" />
               <h2 className="text-xl font-semibold tracking-tight">
-                Agregados Recientemente
+                {t("row_recent")}
               </h2>
             </div>
             <span className="text-xs text-[#e7bcbc]">
-              Estrenos de esta semana
+              {t("row_recentSub")}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

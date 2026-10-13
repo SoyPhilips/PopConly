@@ -16,13 +16,15 @@ import {
   TRENDING_MOVIES,
   TRENDING_SERIES,
 } from "@/lib/realPicks";
-import { FAQS, SYNOPSIS } from "@/lib/data";
+import { FAQS, FAQS_EN, SYNOPSIS } from "@/lib/data";
+import { useLang } from "@/lib/i18n";
 
 function EmailForm({ id }: { id: string }) {
   const [value, setValue] = useState("");
   const [existsMsg, setExistsMsg] = useState(false);
   const [checking, setChecking] = useState(false);
   const router = useRouter();
+  const { t } = useLang();
   return (
     <>
     <form
@@ -57,7 +59,7 @@ function EmailForm({ id }: { id: string }) {
             setExistsMsg(false);
           }}
           className="w-full pl-11 pr-4 py-3.5 rounded-lg bg-[#353439]/60 text-[#e4e1e7] placeholder:text-[#e7bcbc]/60 text-sm focus:outline-none focus:bg-[#353439] transition-all"
-          placeholder="Ingresa tu correo electrónico"
+          placeholder={t("lp_emailPh")}
           required
           type="email"
         />
@@ -67,7 +69,7 @@ function EmailForm({ id }: { id: string }) {
         disabled={checking}
         className="w-full sm:w-auto px-6 py-3.5 rounded-lg bg-[#ff5262] text-white font-semibold text-base flex items-center justify-center gap-2 hover:brightness-110 shadow-lg shadow-[#ff5262]/30 transition-all flex-shrink-0 disabled:opacity-60 cursor-pointer"
       >
-        <span>{checking ? "Verificando..." : "Comenzar"}</span>
+        <span>{checking ? t("lp_emailChecking") : t("lp_emailBtn")}</span>
         <span className="material-symbols-outlined text-[20px]">
           chevron_right
         </span>
@@ -75,7 +77,7 @@ function EmailForm({ id }: { id: string }) {
     </form>
     {existsMsg && (
       <p className="mt-3 text-xs font-semibold text-[#ff6b6b]">
-        Esta cuenta ya existe. Inicia sesión para continuar con tu membresía.
+        {t("lp_emailExists")}
       </p>
     )}
     </>
@@ -83,11 +85,12 @@ function EmailForm({ id }: { id: string }) {
 }
 
 export default function LandingPage() {
-  const [lang, setLang] = useState("Español");
   const [langOpen, setLangOpen] = useState(false);
   const [tab, setTab] = useState<"movies" | "series">("movies");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [selected, setSelected] = useState<TitleDetail | null>(null);
+  const { lang, setLang, t } = useLang();
+  const faqs = lang === "en" ? FAQS_EN : FAQS;
 
   // Tendencias reales: lo más visto en toda la plataforma (null = cargando).
   type TrendRow = TrendingTitle & { synopsis?: string; poster?: string };
@@ -175,14 +178,14 @@ export default function LandingPage() {
                 <span className="material-symbols-outlined text-[18px]">
                   language
                 </span>
-                <span>{lang}</span>
+                <span>{lang === "en" ? "English" : "Español"}</span>
                 <span className="material-symbols-outlined text-[16px]">
                   expand_more
                 </span>
               </button>
               {langOpen && (
                 <div className="absolute right-0 mt-1.5 w-32 py-1.5 rounded-lg bg-[#353439] shadow-xl z-50 flex flex-col">
-                  {["Español", "English"].map((l) => (
+                  {(["es", "en"] as const).map((l) => (
                     <button
                       key={l}
                       className="text-left px-3 py-1.5 text-xs font-semibold hover:bg-[#39393d] w-full"
@@ -191,7 +194,7 @@ export default function LandingPage() {
                         setLangOpen(false);
                       }}
                     >
-                      {l}
+                      {l === "es" ? "Español" : "English"}
                     </button>
                   ))}
                 </div>
@@ -201,7 +204,7 @@ export default function LandingPage() {
               href="/login"
               className="px-4 py-1.5 md:py-2 rounded-lg bg-[#ff5262] text-white text-sm font-semibold hover:brightness-110 shadow-lg shadow-[#ff5262]/25 transition-all"
             >
-              Iniciar Sesión
+              {t("lp_login")}
             </Link>
           </div>
         </header>
@@ -227,18 +230,17 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2a292e]/80 backdrop-blur-md shadow-md mb-6">
               <span className="inline-block w-2 h-2 rounded-full bg-[#ff5262] animate-pulse" />
               <span className="text-xs font-semibold tracking-wider uppercase">
-                Nuevo • Disfruta en 4K HDR y Dolby Atmos
+                {t("lp_heroBadge")}
               </span>
             </div>
             <h1 className="text-4xl md:text-[56px] md:leading-[64px] font-extrabold tracking-tight max-w-3xl leading-tight">
-              Cine y series en su{" "}
+              {t("lp_heroT1")}{" "}
               <span className="bg-gradient-to-r from-[#ffb3b3] via-[#ffb3b3] to-[#ff5262] bg-clip-text text-transparent">
-                estado más puro
+                {t("lp_heroT2")}
               </span>
             </h1>
             <p className="mt-4 text-base text-[#e7bcbc] max-w-2xl">
-              Disfruta de los trailers de tus películas y series favoritas.
-              Cancela cuando quieras desde{" "}
+              {t("lp_heroSub")}{" "}
               <strong className="text-[#feb700] font-semibold">
                 $4.99/mes
               </strong>
@@ -247,8 +249,7 @@ export default function LandingPage() {
             <div className="mt-8 w-full max-w-xl">
               <EmailForm id="hero-email" />
               <p className="mt-3 text-xs text-[#e7bcbc]/80">
-                ¿Listo para ver? Ingresa tu email para crear o reiniciar tu
-                membresía.
+                {t("lp_emailNote")}
               </p>
             </div>
           </div>
@@ -268,10 +269,10 @@ export default function LandingPage() {
               </div>
               <div>
                 <h2 className="text-[28px] leading-9 font-bold tracking-tight">
-                  Tendencias Ahora
+                  {t("lp_trend")}
                 </h2>
                 <p className="text-xs text-[#e7bcbc]">
-                  Los títulos más reproducidos durante las últimas 24 horas
+                  {t("lp_trendSub")}
                 </p>
               </div>
             </div>
@@ -284,7 +285,7 @@ export default function LandingPage() {
                     : "text-[#e7bcbc] hover:text-white"
                 }`}
               >
-                Películas
+                {t("lp_tabMovies")}
               </button>
               <button
                 onClick={() => setTab("series")}
@@ -294,7 +295,7 @@ export default function LandingPage() {
                     : "text-[#e7bcbc] hover:text-white"
                 }`}
               >
-                Series
+                {t("lp_tabSeries")}
               </button>
             </div>
           </div>
@@ -378,24 +379,22 @@ export default function LandingPage() {
         <section className="w-full py-10 my-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs uppercase tracking-widest text-[#ff5262] font-semibold">
-              Experiencia PopConly
+              {t("lp_featKicker")}
             </span>
             <h2 className="mt-2 text-[28px] md:text-[40px] md:leading-[48px] font-bold tracking-tight">
-              Todo lo que necesitas para tu maratón perfecto
+              {t("lp_featTitle")}
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="relative overflow-hidden p-6 rounded-2xl bg-[#1b1b1f] shadow-lg hover:bg-[#1f1f23] transition-all group flex flex-col items-start min-h-[290px] md:min-h-[300px]">
               <h3 className="text-xl font-bold mb-2">
-                Disfruta en cualquier pantalla
+                {t("lp_f1t")}
               </h3>
               <p className="text-sm text-[#e7bcbc] pr-16 md:pr-20">
-                Smart TVs, PlayStation, Xbox, Chromecast, Apple TV,
-                reproductores Blu-ray, tablets, ordenadores y dispositivos
-                móviles sin interrupciones.
+                {t("lp_f1d")}
               </p>
               <div className="mt-6 pr-28 md:pr-32 flex items-center gap-2 text-[#ffb3b3] text-xs font-semibold">
-                <span>Hasta 4 pantallas simultáneas</span>
+                <span>{t("lp_f1b")}</span>
                 <span className="material-symbols-outlined text-[16px]">
                   check_circle
                 </span>
@@ -409,15 +408,13 @@ export default function LandingPage() {
             </div>
             <div className="relative overflow-hidden p-6 rounded-2xl bg-[#1b1b1f] shadow-lg hover:bg-[#1f1f23] transition-all group flex flex-col items-start min-h-[290px] md:min-h-[300px]">
               <h3 className="text-xl font-bold mb-2">
-                Descarga para ver offline
+                {t("lp_f2t")}
               </h3>
               <p className="text-sm text-[#e7bcbc] pr-16 md:pr-20">
-                Guarda tus títulos preferidos en tus dispositivos móviles o
-                tablets y disfrútalos en cualquier viaje o sin conexión a
-                internet.
+                {t("lp_f2d")}
               </p>
               <div className="mt-6 pr-28 md:pr-32 flex items-center gap-2 text-[#ffba20] text-xs font-semibold">
-                <span>Descargas automáticas inteligentes</span>
+                <span>{t("lp_f2b")}</span>
                 <span className="material-symbols-outlined text-[16px]">
                   check_circle
                 </span>
@@ -431,15 +428,13 @@ export default function LandingPage() {
             </div>
             <div className="relative overflow-hidden p-6 rounded-2xl bg-[#1b1b1f] shadow-lg hover:bg-[#1f1f23] transition-all group flex flex-col items-start min-h-[290px] md:min-h-[300px]">
               <h3 className="text-xl font-bold mb-2">
-                Perfiles y control parental
+                {t("lp_f3t")}
               </h3>
               <p className="text-sm text-[#e7bcbc] pr-16 md:pr-20">
-                Crea un espacio exclusivo para los más pequeños con control PIN
-                y clasificaciones por edad adaptadas a cada integrante de tu
-                familia.
+                {t("lp_f3d")}
               </p>
               <div className="mt-6 pr-28 md:pr-32 flex items-center gap-2 text-[#c9bfff] text-xs font-semibold">
-                <span>Protegido con código PIN</span>
+                <span>{t("lp_f3b")}</span>
                 <span className="material-symbols-outlined text-[16px]">
                   check_circle
                 </span>
@@ -458,14 +453,14 @@ export default function LandingPage() {
         <section className="w-full py-10 my-4 max-w-4xl mx-auto flex flex-col items-center">
           <div className="text-center mb-8">
             <span className="text-xs uppercase tracking-widest text-[#ff5262] font-semibold">
-              Dudas comunes
+              {t("lp_faqKicker")}
             </span>
             <h2 className="mt-2 text-[28px] md:text-[40px] font-bold tracking-tight">
-              Preguntas Frecuentes
+              {t("lp_faqTitle")}
             </h2>
           </div>
           <div className="w-full flex flex-col gap-3">
-            {FAQS.map((f, i) => {
+            {faqs.map((f, i) => {
               const open = openFaq === i;
               return (
                 <div
@@ -495,11 +490,10 @@ export default function LandingPage() {
           </div>
           <div className="mt-12 w-full max-w-xl text-center">
             <h3 className="text-xl font-semibold mb-3">
-              ¿Listo para comenzar a disfrutar?
+              {t("lp_ctaT")}
             </h3>
             <p className="text-xs text-[#e7bcbc] mb-6">
-              Ingresa tu correo para crear o reactivar tu suscripción de
-              inmediato.
+              {t("lp_ctaS")}
             </p>
             <EmailForm id="bottom-email" />
           </div>
@@ -509,26 +503,26 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-between gap-4 py-4">
             <div className="flex items-center gap-3">
               <Logo size="sm" />
-              <span>© {new Date().getFullYear()} Todos los derechos reservados.</span>
+              <span>© {new Date().getFullYear()} {t("lp_rights")}</span>
             </div>
             <div className="flex flex-wrap gap-4 text-xs font-semibold">
               <Link href="/legal" className="hover:text-white transition-colors">
-                Términos de Uso
+                {t("lp_terms")}
               </Link>
               <Link href="/legal" className="hover:text-white transition-colors">
-                Privacidad
+                {t("lp_privacy")}
               </Link>
               <Link href="/legal" className="hover:text-white transition-colors">
-                Preferencias de Cookies
+                {t("lp_cookies")}
               </Link>
               <Link href="/help" className="hover:text-white transition-colors">
-                Centro de Ayuda
+                {t("lp_help")}
               </Link>
               <Link
                 href="/browse"
                 className="hover:text-white transition-colors"
               >
-                Explorar catálogo
+                {t("lp_browse")}
               </Link>
             </div>
           </div>

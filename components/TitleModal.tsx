@@ -8,6 +8,7 @@ import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
 import { slugify } from "@/lib/slugs";
 import { thumb } from "@/lib/thumb";
+import { useLang } from "@/lib/i18n";
 export type TitleDetail = {
   title: string;
   image: string;
@@ -30,6 +31,7 @@ type Props = {
 
 function WatchlistToggle({ item }: { item: TitleDetail }) {
   const [inList, setInList] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     setInList(
@@ -64,7 +66,7 @@ function WatchlistToggle({ item }: { item: TitleDetail }) {
       <span className="material-symbols-outlined">
         {inList ? "check" : "add"}
       </span>
-      {inList ? "En tu lista" : "Mi lista"}
+      {inList ? t("md_inList") : t("md_list")}
     </button>
   );
 }
@@ -193,6 +195,7 @@ function ModalBackdrop({ title, image }: { title: string; image: string }) {
 }
 
 export default function TitleModal({ item, onClose, hideWatchlist = false }: Props) {
+  const { t } = useLang();
   useEffect(() => {
     if (!item) return;
     const onKey = (e: KeyboardEvent) => {
@@ -230,7 +233,7 @@ export default function TitleModal({ item, onClose, hideWatchlist = false }: Pro
         <div className="relative">
           <button
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t("md_close")}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 flex items-center justify-center transition-colors"
           >
             <span className="material-symbols-outlined text-2xl">close</span>
@@ -280,7 +283,7 @@ export default function TitleModal({ item, onClose, hideWatchlist = false }: Pro
               onClick={onClose}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-[#e50914] hover:bg-[#f6121d] text-white text-lg font-medium transition-colors cursor-pointer"
             >
-              Comienza ya
+              {t("md_play")}
               <span className="material-symbols-outlined text-2xl">
                 chevron_right
               </span>
@@ -292,7 +295,7 @@ export default function TitleModal({ item, onClose, hideWatchlist = false }: Pro
             onClick={onClose}
             className="inline-block mt-4 text-xs text-white/60 hover:text-white underline underline-offset-4"
           >
-            Ver ficha completa
+            {t("md_full")}
           </Link>
         </div>
       </div>

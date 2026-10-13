@@ -195,6 +195,29 @@ export const FAQS = [
   },
 ];
 
+export const FAQS_EN: { q: string; a: string }[] = [
+  {
+    q: "What is PopConly?",
+    a: "PopConly is a subscription streaming service that lets you watch award-winning movies, premiere TV series, exclusive original productions and documentaries on thousands of internet-connected devices. All ad-free and in stunning 4K HDR.",
+  },
+  {
+    q: "How much does PopConly cost?",
+    a: "We offer flexible plans: Essential for $4.99/month, Plus for $8.99/month and Ultra for $12.99/month (more screens and higher quality depending on the plan). No extra fees or forced contracts.",
+  },
+  {
+    q: "Where can I watch?",
+    a: "Watch anywhere, anytime. Sign in with your PopConly account on the web from your computer or through the official app for Smart TVs (Samsung, LG, Android TV), consoles (PlayStation, Xbox), iOS and Android devices, and streaming dongles.",
+  },
+  {
+    q: "How do I cancel my subscription?",
+    a: "PopConly is 100% flexible. No annoying contracts or long-term commitments. You can easily cancel your membership online with 1 click from your account panel at any time with no penalties or cancellation fees.",
+  },
+  {
+    q: "What content can I watch on PopConly?",
+    a: "PopConly has an ever-expanding catalog of blockbuster features, complete sagas, acclaimed thrillers, exclusive anime productions, award-winning documentaries and original series produced by PopConly Studios. We add new premieres every week.",
+  },
+];
+
 // ---- Browse / Dashboard data ----
 
 export const HERO_BACKDROP =

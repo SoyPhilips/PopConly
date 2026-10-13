@@ -15,6 +15,7 @@ import { pullFavorites, pushFavorite } from "@/lib/myListSync";
 import { slugify } from "@/lib/slugs";
 import { getActiveProfile } from "@/lib/activeProfile";
 import { readRecsCache, sameRecs, writeRecsCache } from "@/lib/recsCache";
+import { useLang } from "@/lib/i18n";
 import type { CatalogItem } from "@/lib/catalog";
 
 const TABS = ["Todos", "Películas", "Series", "Descargados"] as const;
@@ -34,6 +35,7 @@ export default function MyListPage() {
   });
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<TitleDetail | null>(null);
+  const { t } = useLang();
 
   useEffect(() => {
     setItems(loadMyList());
@@ -151,6 +153,13 @@ export default function MyListPage() {
     [items]
   );
 
+  const TABS_I18N = [
+    { key: "Todos" as const, label: t("ml_all") },
+    { key: "Películas" as const, label: t("ml_movies") },
+    { key: "Series" as const, label: t("ml_series") },
+    { key: "Descargados" as const, label: t("ml_downloaded") },
+  ];
+
   const remove = (title: string) => {
     setItems((prev) => prev.filter((i) => i.title !== title));
     pushFavorite(title, false);
@@ -182,17 +191,17 @@ export default function MyListPage() {
           <div>
             <p className="text-xs text-[#e7bcbc]">
               {recs.genre
-                ? `Basado en tu interés en ${recs.genre}.`
-                : "Todo lo que guardes con + aparece aquí, en todos tus dispositivos."}
+                ? `${t("row_because")} ${recs.genre}.`
+                : t("ml_sub")}
             </p>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mt-1">
-              Mi Lista
+              {t("ml_title")}
             </h1>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("grid")}
-              aria-label="Vista cuadrícula"
+              aria-label={t("ml_gridView")}
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                 view === "grid" ? "bg-[#ff5262]" : "bg-[#1b1b1f] hover:bg-[#2a292e]"
               }`}
@@ -201,7 +210,7 @@ export default function MyListPage() {
             </button>
             <button
               onClick={() => setView("list")}
-              aria-label="Vista lista"
+              aria-label={t("ml_listView")}
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                 view === "list" ? "bg-[#ff5262]" : "bg-[#1b1b1f] hover:bg-[#2a292e]"
               }`}
@@ -212,23 +221,23 @@ export default function MyListPage() {
               <span className="material-symbols-outlined text-base">
                 download_for_offline
               </span>
-              Descargas activas {counts.Descargados}
+              {t("ml_dlActive")} {counts.Descargados}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-8">
-          {TABS.map((t) => (
+          {TABS_I18N.map(({ key: k, label }) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={k}
+              onClick={() => setTab(k)}
               className={`px-5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                tab === t
+                tab === k
                   ? "bg-[#ff5262] text-white shadow-md"
                   : "bg-[#1b1b1f] hover:bg-[#353439]"
               }`}
             >
-              {t} ({counts[t]})
+              {label} ({counts[k]})
             </button>
           ))}
         </div>
@@ -249,12 +258,12 @@ export default function MyListPage() {
           ) : (
           <div className="rounded-xl bg-[#1b1b1f] p-10 text-center">
             <p className="font-semibold">
-              {items.length === 0 ? "Tu lista está vacía" : "Sin resultados en este filtro"}
+              {items.length === 0 ? t("ml_empty") : t("ml_emptyFilter")}
             </p>
             <p className="text-sm text-white/50 mt-1">
               {items.length === 0
-                ? "Explora el catálogo y pulsa + en lo que quieras guardar. Se sincroniza con tu cuenta."
-                : "Quita elementos o cambia de pestaña para seguir explorando."}
+                ? t("ml_emptyMsg")
+                : t("ml_emptyFilterMsg")}
             </p>
           </div>
           )
@@ -290,7 +299,7 @@ export default function MyListPage() {
                 </button>
                 <Link
                   href={`/watch?title=${encodeURIComponent(it.title)}`}
-                  title="Reproducir"
+                  title={t("ml_play")}
                   className="w-11 h-11 rounded-full bg-[#ff5262] hover:brightness-110 flex items-center justify-center shrink-0 cursor-pointer"
                 >
                   <span
@@ -302,7 +311,7 @@ export default function MyListPage() {
                 </Link>
                 <button
                   onClick={() => remove(it.title)}
-                  title="Quitar"
+                  title={t("ml_remove")}
                   className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 hidden sm:flex items-center justify-center shrink-0"
                 >
                   <span className="material-symbols-outlined">bookmark_remove</span>
@@ -315,7 +324,7 @@ export default function MyListPage() {
         {recs.items.length > 0 && (
           <section className="mt-14 flex flex-col gap-4">
             <h2 className="text-xl font-semibold">
-              Recomendaciones inspiradas en tu lista
+              {t("ml_recs")}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {recs.items.map((r) => (
