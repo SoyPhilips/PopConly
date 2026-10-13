@@ -9,8 +9,11 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["400", "600", "700", "800"],
 });
 
-// TODO: cambiar por el dominio real cuando lo compres (ej. https://popconly.tv)
-export const SITE_URL = "https://popconly.tv";
+// Dominio canónico: del entorno en build, .com por defecto.
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://popconly.com").replace(
+  /\/$/,
+  ""
+);
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
