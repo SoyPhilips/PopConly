@@ -9,6 +9,7 @@ import SearchResults from "@/components/SearchResults";
 import { CriticsCard, PosterMiniCard, PanoramicActionCard } from "@/components/PrototypeCards";
 import { MOVIES_HERO, MOVIE_ROWS } from "@/lib/realPicks";
 import { useSmartHero } from "@/lib/useSmartHero";
+import { useLang } from "@/lib/i18n";
 import { MOVIE_FILTERS } from "@/lib/catalog";
 import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
@@ -26,6 +27,17 @@ export default function MoviesPage() {
 
   // Héroe inteligente: rota a la película que el algoritmo recomienda.
   const { hero: movieHero, reason: movieReason, personalized: moviePersonal, ready: movieReady } = useSmartHero(MOVIES_HERO, "Película", 5);
+  const { t } = useLang();
+
+  const MOVIE_FILTER_LABELS: Record<string, string> = {
+    Todos: t("mv_fTodos"),
+    "Acción": t("mv_fAccion"),
+    "Ciencia Ficción": t("mv_fScifi"),
+    Drama: t("mv_fDrama"),
+    Terror: t("mv_fTerror"),
+    Comedia: t("mv_fComedia"),
+    "Animación": t("mv_fAnim"),
+  };
 
   useEffect(() => {
     setInList(
@@ -167,7 +179,7 @@ export default function MoviesPage() {
                 <span className="font-bold text-white">{movieHero.rating ?? "9.5"}</span>
               </span>
               <span className="text-[#e7bcbc]/60 text-xs">
-                {moviePersonal && movieReason ? `Porque viste ${movieReason}` : "(34.8k reseñas)"}
+                {moviePersonal && movieReason ? `${t("hero_because")} ${movieReason}` : t("mv_reviews")}
               </span>
               <span className="w-1 h-1 rounded-full bg-white/30" />
               <span className="text-white font-semibold">{movieHero.year ?? "2h 15m"}</span>
@@ -188,7 +200,7 @@ export default function MoviesPage() {
                 className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#ff5262] text-white text-base font-bold shadow-xl shadow-[#ff5262]/40 hover:scale-105 hover:brightness-110 transition-all cursor-pointer"
               >
                 <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-                Ver ahora
+                {t("mv_watchNow")}
               </Link>
               <button
                 onClick={toggleHeroList}
@@ -197,10 +209,10 @@ export default function MoviesPage() {
                 }`}
               >
                 <span className="material-symbols-outlined text-xl">{inList ? "check" : "playlist_add"}</span>
-                <span>{inList ? "En tu lista" : "Añadir a mi lista"}</span>
+                <span>{inList ? t("mv_inList") : t("mv_add")}</span>
               </button>
               <button
-                aria-label="Información adicional"
+                aria-label={t("mv_infoAria")}
                 onClick={() => open(movieHero)}
                 className="w-12 h-12 rounded-xl bg-[#2a292e]/60 hover:bg-[#353439] flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer"
               >
@@ -225,24 +237,24 @@ export default function MoviesPage() {
                     : "bg-[#1b1b1f] text-[#e7bcbc] hover:text-white hover:bg-[#1f1f23]"
                 }`}
               >
-                {f}
+                {MOVIE_FILTER_LABELS[f] ?? f}
               </button>
             ))}
           </div>
           <div className="flex items-center justify-between md:justify-end gap-2 flex-shrink-0">
             <div className="flex items-center gap-2 bg-[#1b1b1f] px-3 py-1.5 rounded-lg">
               <span className="material-symbols-outlined text-[#e7bcbc] text-sm">swap_vert</span>
-              <span className="text-[10px] text-[#e7bcbc] uppercase font-bold">Ordenar:</span>
+              <span className="text-[10px] text-[#e7bcbc] uppercase font-bold">{t("mv_sortBy")}</span>
               <select
-                aria-label="Ordenar películas por"
+                aria-label={t("mv_sortAria")}
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className="bg-transparent text-xs focus:outline-none cursor-pointer pr-2"
               >
-                <option className="bg-[#2a292e]" value="relevancia">Relevancia</option>
-                <option className="bg-[#2a292e]" value="estreno">Año (2026 - Reciente)</option>
-                <option className="bg-[#2a292e]" value="calificacion">Mayor Calificación</option>
-                <option className="bg-[#2a292e]" value="vistas">Más Populares</option>
+                <option className="bg-[#2a292e]" value="relevancia">{t("mv_optRel")}</option>
+                <option className="bg-[#2a292e]" value="estreno">{t("mv_optYear")}</option>
+                <option className="bg-[#2a292e]" value="calificacion">{t("mv_optRate")}</option>
+                <option className="bg-[#2a292e]" value="vistas">{t("mv_optViews")}</option>
               </select>
             </div>
           </div>
@@ -256,15 +268,15 @@ export default function MoviesPage() {
             <div>
               <div className="flex items-center gap-2 text-[#feb700] mb-1">
                 <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
-                <span className="text-[10px] uppercase tracking-widest font-extrabold">Selección Cinéfila Exclusiva</span>
+                <span className="text-[10px] uppercase tracking-widest font-extrabold">{t("mv_accK")}</span>
               </div>
-              <h2 className="text-[28px] font-bold tracking-tight">Aclamadas por la crítica</h2>
+              <h2 className="text-[28px] font-bold tracking-tight">{t("mv_accT")}</h2>
             </div>
             <div className="flex items-center gap-2">
-              <button aria-label="Anterior" onClick={() => scrollSlider(-1)} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
+              <button aria-label={t("mv_prev")} onClick={() => scrollSlider(-1)} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
-              <button aria-label="Siguiente" onClick={() => scrollSlider(1)} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
+              <button aria-label={t("mv_next")} onClick={() => scrollSlider(1)} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
                 <span className="material-symbols-outlined">chevron_right</span>
               </button>
             </div>
@@ -292,12 +304,12 @@ export default function MoviesPage() {
             <div>
               <div className="flex items-center gap-2 text-[#ffb3b3] text-[10px] uppercase tracking-wider font-extrabold mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#ffb3b3] animate-pulse" />
-                Cartelera Actualizada
+                {t("mv_lauK")}
               </div>
-              <h2 className="text-[28px] font-bold tracking-tight">Lanzamientos 2026</h2>
+              <h2 className="text-[28px] font-bold tracking-tight">{t("mv_lauT")}</h2>
             </div>
             <Link href="/search?q=2026" className="text-sm text-[#ffb3b3] hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-              Ver todos ({launchesTotal ?? 48})
+              {t("mv_seeAll")} ({launchesTotal ?? 48})
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </Link>
           </div>
@@ -326,8 +338,8 @@ export default function MoviesPage() {
             <div className="flex items-center gap-3">
               <div className="w-3 h-8 bg-[#ff5262] rounded-full" />
               <div>
-                <h2 className="text-[28px] font-bold tracking-tight">Especiales de Acción</h2>
-                <p className="text-xs text-[#e7bcbc]">Taquilleras de alto calibre, combates tácticos y persecuciones implacables</p>
+                <h2 className="text-[28px] font-bold tracking-tight">{t("mv_speT")}</h2>
+                <p className="text-xs text-[#e7bcbc]">{t("mv_speS")}</p>
               </div>
             </div>
           </div>

@@ -13,6 +13,7 @@ import { useSearchScroll } from "@/lib/useSearchScroll";
 import { CATEGORIES, CURATED_COLLECTIONS, type Category } from "@/lib/catalog";
 import { allTitles } from "@/lib/findTitle";
 import { slugify } from "@/lib/slugs";
+import { useLang } from "@/lib/i18n";
 import type { CatalogItem } from "@/lib/catalog";
 
 const TABS = ["Todos", "Películas", "Series", "Documentales"] as const;
@@ -40,6 +41,19 @@ export default function CategoriesPage() {
   const [selected, setSelected] = useState<Category | null>(null);
   const [kindFilter, setKindFilter] = useState<(typeof KIND_TABS)[number]>("Todo");
   const [detail, setDetail] = useState<TitleDetail | null>(null);
+  const { t } = useLang();
+
+  const TAB_LABELS: Record<string, string> = {
+    Todos: t("cat_tAll"),
+    "Películas": t("cat_tMovies"),
+    Series: t("cat_tSeries"),
+    Documentales: t("cat_tDocs"),
+  };
+  const KIND_LABELS: Record<string, string> = {
+    Todo: t("cat_kAll"),
+    "Películas": t("cat_kMovies"),
+    Series: t("cat_kSeries"),
+  };
 
   // La selección vive en la URL (?cat=...): el botón atrás del navegador
   // vuelve a la cuadrícula en vez de sacarte de la sección.
@@ -152,7 +166,7 @@ export default function CategoriesPage() {
             className="self-start flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">arrow_back</span>
-            Todas las categorías
+            {t("cat_back")}
           </button>
           <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl">
             <span
@@ -191,17 +205,16 @@ export default function CategoriesPage() {
                     : "bg-[#1b1b1f] text-[#e7bcbc] hover:text-white"
                 }`}
               >
-                {k}
+                {KIND_LABELS[k] ?? k}
               </button>
             ))}
           </div>
           {categoryTitles.length === 0 ? (
             <div className="rounded-2xl bg-[#1b1b1f] border border-white/5 p-10 text-center">
               <span className="material-symbols-outlined text-5xl text-white/20">movie_filter</span>
-              <p className="font-bold mt-3">Muy pronto por aquí</p>
+              <p className="font-bold mt-3">{t("cat_emptyT")}</p>
               <p className="text-sm text-white/50 mt-1 max-w-sm mx-auto">
-                Estamos curando los títulos de {selected.name.toLowerCase()} para esta vitrina.
-                Mientras tanto explora el resto del catálogo.
+                {t("cat_emptyS")} {selected.name.toLowerCase()} {t("cat_emptyS2")}
               </p>
             </div>
           ) : (
@@ -226,29 +239,28 @@ export default function CategoriesPage() {
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-[#ff5262] animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#ffb3b3]">
-              Catálogo Curado 2025
+              {t("cat_curated")} {new Date().getFullYear()}
             </span>
           </div>
           <h1 className="text-4xl md:text-[56px] md:leading-[60px] font-extrabold tracking-tight">
-            Explora por Categorías
+            {t("cat_title")}
           </h1>
           <p className="text-base text-[#e7bcbc]/80">
-            Encuentra tu próxima obsesión cinematográfica por género,
-            temática y colecciones curadas con calidad de sala prémium.
+            {t("cat_sub")}
           </p>
         </div>
         <div className="flex items-center gap-1 self-start md:self-auto bg-[#1b1b1f] p-1.5 rounded-full shadow-lg">
-          {TABS.map((t) => (
+          {TABS.map((tabItem) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabItem}
+              onClick={() => setTab(tabItem)}
               className={`px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                tab === t
+                tab === tabItem
                   ? "bg-[#ff5262] text-white shadow-md"
                   : "text-[#e7bcbc] hover:text-white hover:bg-[#1f1f23]"
               }`}
             >
-              {t}
+              {TAB_LABELS[tabItem] ?? tabItem}
             </button>
           ))}
         </div>
@@ -262,21 +274,21 @@ export default function CategoriesPage() {
           <input
             value={catSearch}
             onChange={(e) => setCatSearch(e.target.value)}
-            placeholder="Buscar categoría (ej. Acción, Suspenso, Cyberpunk)..."
+            placeholder={t("cat_searchPh")}
             className="w-full pl-11 pr-4 py-2.5 bg-[#1f1f23] placeholder:text-[#e7bcbc]/60 text-sm rounded-lg focus:outline-none"
           />
         </div>
         <div className="flex items-center gap-5 text-[#e7bcbc] text-[10px] font-bold">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#feb700]" />
-            {filtered.length} Categorías Activas
+            {filtered.length} {t("cat_active")}
           </span>
         </div>
       </div>
 
       {filtered.length === 0 ? (
         <p className="relative z-10 text-sm text-white/50">
-          Sin categorías coincidentes.
+          {t("cat_empty")}
         </p>
       ) : (
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -327,17 +339,15 @@ export default function CategoriesPage() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="flex flex-col gap-2 max-w-xl">
             <span className="text-[10px] text-[#ffb3b3] uppercase tracking-wider font-bold">
-              Colecciones Curadas
+              {t("cat_collK")}
             </span>
-            <h2 className="text-[28px] font-bold">¿No sabes qué ver hoy?</h2>
+            <h2 className="text-[28px] font-bold">{t("cat_collT")}</h2>
             <p className="text-sm text-[#e7bcbc]">
-              Prueba nuestras selecciones automáticas basadas en tu estado de
-              ánimo o déjate sorprender con el Selector Aleatorio de
-              PopConly.
+              {t("cat_collS")}
             </p>
             {surprise && (
               <p className="text-sm">
-                Tu destino:{" "}
+                {t("cat_destiny")}{" "}
                 <span className="font-bold text-[#ffb3b3]">{surprise}</span>
               </p>
             )}
@@ -350,14 +360,14 @@ export default function CategoriesPage() {
               <span className="material-symbols-outlined text-[#feb700]">
                 casino
               </span>
-              Ruleta Sorpresa
+              {t("cat_surprise")}
             </button>
             <Link
               href="/browse"
               className="w-full sm:w-auto px-6 py-3.5 bg-[#ff5262] hover:brightness-110 text-sm font-semibold rounded-lg shadow-[0_4px_24px_rgba(255,42,77,0.4)] transition-all flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined">auto_awesome</span>
-              Top 10 Semanal
+              {t("cat_top10")}
             </Link>
           </div>
         </div>

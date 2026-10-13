@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 /** ES/EN real: landing completa + chrome del dashboard (header, footer,
  *  filas, búsqueda, modal, Mi Lista). El resto del contenido sigue en
- *  español por ahora (fase 2). */
+ *  español por ahora (fase 2). Los títulos del catálogo NUNCA se traducen. */
 
 export type Lang = "es" | "en";
 
@@ -183,12 +184,146 @@ const dict = {
   md_inList: ["En tu lista", "In your list"],
   md_full: ["Ver ficha completa", "View full details"],
   md_close: ["Cerrar", "Close"],
+  // Películas
+  mv_reviews: ["(34.8k reseñas)", "(34.8k reviews)"],
+  mv_watchNow: ["Ver ahora", "Watch now"],
+  mv_add: ["Añadir a mi lista", "Add to my list"],
+  mv_inList: ["En tu lista", "In your list"],
+  mv_infoAria: ["Información adicional", "More info"],
+  mv_sortBy: ["Ordenar:", "Sort by:"],
+  mv_sortAria: ["Ordenar películas por", "Sort movies by"],
+  mv_optRel: ["Relevancia", "Relevance"],
+  mv_optYear: ["Año (2026 - Reciente)", "Year (2026 - Newest)"],
+  mv_optRate: ["Mayor Calificación", "Top Rated"],
+  mv_optViews: ["Más Populares", "Most Popular"],
+  mv_fTodos: ["Todos", "All"],
+  mv_fAccion: ["Acción", "Action"],
+  mv_fScifi: ["Ciencia Ficción", "Sci-Fi"],
+  mv_fDrama: ["Drama", "Drama"],
+  mv_fTerror: ["Terror", "Horror"],
+  mv_fComedia: ["Comedia", "Comedy"],
+  mv_fAnim: ["Animación", "Animation"],
+  mv_accK: ["Selección Cinéfila Exclusiva", "Exclusive Cinephile Selection"],
+  mv_accT: ["Aclamadas por la crítica", "Critically Acclaimed"],
+  mv_prev: ["Anterior", "Previous"],
+  mv_next: ["Siguiente", "Next"],
+  mv_lauK: ["Cartelera Actualizada", "Updated Now Showing"],
+  mv_lauT: ["Lanzamientos 2026", "2026 Releases"],
+  mv_seeAll: ["Ver todos", "See all"],
+  mv_speT: ["Especiales de Acción", "Action Specials"],
+  mv_speS: [
+    "Taquilleras de alto calibre, combates tácticos y persecuciones implacables",
+    "High-caliber blockbusters, tactical combat and relentless chases",
+  ],
+  // Series
+  sr_heroBadge: ["Serie original PopConly", "A PopConly Original Series"],
+  sr_watchSeason: ["Ver Temporada 1", "Watch Season 1"],
+  sr_trailer: ["Tráiler oficial", "Official trailer"],
+  sr_sAll: ["Todas las Series", "All Series"],
+  sr_sScifi: ["Sci-Fi & Cybernoir", "Sci-Fi & Cybernoir"],
+  sr_sThriller: ["Thriller Psicológico", "Psychological Thriller"],
+  sr_sCrime: ["Dramas Criminales", "Crime Dramas"],
+  sr_sFantasy: ["Fantasía Oscura", "Dark Fantasy"],
+  sr_sortBy: ["Ordenar por:", "Sort by:"],
+  sr_sortVal: ["Más Vistas Este Mes", "Most Watched This Month"],
+  sr_bingeK: ["Inmersión Continua", "Continuous Immersion"],
+  sr_bingeT: ["Series Maratoneables", "Binge-Worthy Series"],
+  sr_bingeS: ["Historias completas listas para consumir de inicio a fin sin pausas.", "Complete stories ready to enjoy from start to finish with no pauses."],
+  sr_miniK: ["Obras maestras autoconclusivas", "Self-contained masterpieces"],
+  sr_miniT: ["Miniseries Exclusivas", "Exclusive Miniseries"],
+  sr_weekK: ["Sigue el ritmo de emisión mundial", "Follow the worldwide release rhythm"],
+  sr_weekT: ["Episodios Semanales", "Weekly Episodes"],
+  sr_weekS: ["Nuevas revelaciones cada semana, sin spoilers.", "New revelations every week, no spoilers."],
+  sr_remind: ["Recordarme el viernes", "Remind me Friday"],
+  sr_prev: ["Anterior", "Previous"],
+  sr_next: ["Siguiente", "Next"],
+  // Categorías
+  cat_curated: ["Catálogo Curado", "Curated Catalog"],
+  cat_title: ["Explora por Categorías", "Explore by Category"],
+  cat_sub: [
+    "Encuentra tu próxima obsesión cinematográfica por género, temática y colecciones curadas con calidad de sala prémium.",
+    "Find your next movie obsession by genre, theme and curated collections with premium theater quality.",
+  ],
+  cat_tAll: ["Todos", "All"],
+  cat_tMovies: ["Películas", "Movies"],
+  cat_tSeries: ["Series", "TV Shows"],
+  cat_tDocs: ["Documentales", "Documentaries"],
+  cat_searchPh: ["Buscar categoría (ej. Acción, Suspenso, Cyberpunk)...", "Search categories (e.g. Action, Suspense, Cyberpunk)..."],
+  cat_active: ["Categorías Activas", "Active Categories"],
+  cat_empty: ["Sin categorías coincidentes.", "No matching categories."],
+  cat_back: ["Todas las categorías", "All categories"],
+  cat_kAll: ["Todo", "All"],
+  cat_kMovies: ["Películas", "Movies"],
+  cat_kSeries: ["Series", "TV Shows"],
+  cat_emptyT: ["Muy pronto por aquí", "Coming soon here"],
+  cat_emptyS: ["Estamos curando los títulos de", "We're curating the titles of"],
+  cat_emptyS2: ["para esta vitrina. Mientras tanto explora el resto del catálogo.", "for this shelf. Meanwhile explore the rest of the catalog."],
+  cat_collK: ["Colecciones Curadas", "Curated Collections"],
+  cat_collT: ["¿No sabes qué ver hoy?", "Don't know what to watch today?"],
+  cat_collS: [
+    "Prueba nuestras selecciones automáticas basadas en tu estado de ánimo o déjate sorprender con el Selector Aleatorio de PopConly.",
+    "Try our automatic picks based on your mood or let PopConly's Random Picker surprise you.",
+  ],
+  cat_surprise: ["Ruleta Sorpresa", "Surprise Roulette"],
+  cat_top10: ["Top 10 Semanal", "Weekly Top 10"],
+  cat_destiny: ["Tu destino:", "Your destiny:"],
 } as const;
 
 export type TKey = keyof typeof dict;
 
 export function useLang(): { lang: Lang; setLang: (l: Lang) => void; t: (k: TKey) => string } {
+  const ctx = useContext(LangCtx);
+  if (ctx) return ctx;
+  // Sin proveedor (fuera del árbol): estado local de respaldo.
   const [lang, setLangState] = useState<Lang>(() => getLang());
+  const setLang = useCallback((l: Lang) => {
+    try {
+      window.localStorage.setItem(KEY, l);
+    } catch {
+      /* sin almacenamiento */
+    }
+    setLangState(l);
+  }, []);
+  const t = useCallback((k: TKey) => (lang === "en" ? dict[k][1] : dict[k][0]), [lang]);
+  return { lang, setLang, t };
+}
+
+type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: TKey) => string };
+
+const LangCtx = createContext<Ctx | null>(null);
+
+/** Proveedor global: un solo idioma para toda la app. Con sesión, se guarda
+ *  en la DB del usuario (sobrevive cerrar sesión y otros dispositivos);
+ *  sin sesión, solo localStorage (landing). */
+export function LangProvider({ children }: { children: React.ReactNode }) {
+  const [lang, setLangState] = useState<Lang>(() => getLang());
+  const { data: session, status } = useSession();
+
+  // Al iniciar sesión: manda el idioma guardado en la DB del usuario.
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/me/settings");
+        if (!r.ok) return;
+        const d = (await r.json()) as { lang?: string };
+        if (!cancelled && (d.lang === "es" || d.lang === "en")) {
+          setLangState(d.lang);
+          try {
+            window.localStorage.setItem(KEY, d.lang);
+          } catch {
+            /* sin almacenamiento */
+          }
+        }
+      } catch {
+        /* local */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session?.user?.email]);
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -198,18 +333,28 @@ export function useLang(): { lang: Lang; setLang: (l: Lang) => void; t: (k: TKey
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const setLang = useCallback((l: Lang) => {
-    try {
-      window.localStorage.setItem(KEY, l);
-    } catch {
-      /* sin almacenamiento */
-    }
-    setLangState(l);
-  }, []);
-
-  const t = useCallback(
-    (k: TKey) => (lang === "en" ? dict[k][1] : dict[k][0]),
-    [lang]
+  const setLang = useCallback(
+    (l: Lang) => {
+      try {
+        window.localStorage.setItem(KEY, l);
+      } catch {
+        /* sin almacenamiento */
+      }
+      setLangState(l);
+      // Solo con sesión se persiste en DB (nunca en landing).
+      if (status === "authenticated") {
+        fetch("/api/me/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lang: l }),
+        }).catch(() => {
+          /* mejor esfuerzo */
+        });
+      }
+    },
+    [status]
   );
-  return { lang, setLang, t };
+
+  const t = useCallback((k: TKey) => (lang === "en" ? dict[k][1] : dict[k][0]), [lang]);
+  return <LangCtx.Provider value={{ lang, setLang, t }}>{children}</LangCtx.Provider>;
 }

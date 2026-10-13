@@ -10,6 +10,7 @@ import { useSearchScroll } from "@/lib/useSearchScroll";
 import { BingeCard, MiniseriesCard, WeeklyCard } from "@/components/PrototypeCards";
 import { SERIES_HERO, SERIES_ROWS, BINGE_PATCH, WEEKLY_PATCH } from "@/lib/realPicks";
 import { useSmartHero } from "@/lib/useSmartHero";
+import { useLang } from "@/lib/i18n";
 import { SERIES_FILTERS } from "@/lib/catalog";
 import { BINGE_META, WEEKLY_META } from "@/components/PrototypeCards";
 import type { CatalogItem } from "@/lib/catalog";
@@ -22,6 +23,15 @@ export default function SeriesPage() {
 
   // Héroe inteligente: rota a la serie que el algoritmo recomienda.
   const { hero: seriesHero, reason: seriesReason, personalized: seriesPersonal, ready: seriesReady } = useSmartHero(SERIES_HERO, "Serie", 11);
+  const { t } = useLang();
+
+  const SERIES_FILTER_LABELS: Record<string, string> = {
+    "Todas las Series": t("sr_sAll"),
+    "Sci-Fi & Cybernoir": t("sr_sScifi"),
+    "Thriller Psicológico": t("sr_sThriller"),
+    "Dramas Criminales": t("sr_sCrime"),
+    "Fantasía Oscura": t("sr_sFantasy"),
+  };
 
   const q = query.trim().toLowerCase();
   const FILTER_KEYS: Record<string, string[]> = {
@@ -108,7 +118,7 @@ export default function SeriesPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2a292e]/90 backdrop-blur-md shadow-lg shadow-black/40 self-start">
               <span className="w-2 h-2 rounded-full bg-[#ff5262] animate-pulse" />
               <span className="text-[10px] font-bold uppercase tracking-widest">
-                {seriesPersonal && seriesReason ? `Porque viste ${seriesReason}` : "Serie original PopConly"}
+                {seriesPersonal && seriesReason ? `${t("hero_because")} ${seriesReason}` : t("sr_heroBadge")}
               </span>
             </div>
             <h1 className="text-4xl md:text-[56px] md:leading-[60px] font-extrabold tracking-tight uppercase">
@@ -121,11 +131,11 @@ export default function SeriesPage() {
                 className="flex items-center gap-2 px-7 py-3 rounded-xl bg-[#ff5262] font-bold hover:brightness-110 hover:scale-105 transition-all shadow-[0_4px_24px_rgba(255,42,77,0.45)] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-                Ver Temporada 1
+                {t("sr_watchSeason")}
               </Link>
               <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-xl transition-all font-semibold cursor-pointer">
                 <span className="material-symbols-outlined">smart_display</span>
-                Tráiler oficial
+                {t("sr_trailer")}
               </button>
             </div>
           </div>
@@ -144,14 +154,14 @@ export default function SeriesPage() {
                   filter === f ? "bg-[#ff5262] text-white shadow-md" : "bg-[#1b1b1f] text-[#e7bcbc] hover:text-white"
                 }`}
               >
-                {f}
+                {SERIES_FILTER_LABELS[f] ?? f}
               </button>
             ))}
           </div>
           <div className="flex items-center gap-2 self-end md:self-auto">
-            <span className="text-xs text-[#e7bcbc]">Ordenar por:</span>
+            <span className="text-xs text-[#e7bcbc]">{t("sr_sortBy")}</span>
             <div className="flex items-center gap-1 bg-[#1f1f23] px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-[#2a292e] transition-colors">
-              <span>Más Vistas Este Mes</span>
+              <span>{t("sr_sortVal")}</span>
               <span className="material-symbols-outlined text-base">expand_more</span>
             </div>
           </div>
@@ -165,16 +175,16 @@ export default function SeriesPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#ff5262] text-xl">bolt</span>
-                <span className="text-[10px] text-[#ffb3b3] uppercase tracking-widest">Inmersión Continua</span>
+                <span className="text-[10px] text-[#ffb3b3] uppercase tracking-widest">{t("sr_bingeK")}</span>
               </div>
-              <h2 className="text-[28px] font-bold">Series Maratoneables</h2>
-              <p className="text-xs text-[#e7bcbc]">Historias completas listas para consumir de inicio a fin sin pausas.</p>
+              <h2 className="text-[28px] font-bold">{t("sr_bingeT")}</h2>
+              <p className="text-xs text-[#e7bcbc]">{t("sr_bingeS")}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button aria-label="Anterior" className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
+              <button aria-label={t("sr_prev")} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
-              <button aria-label="Siguiente" className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
+              <button aria-label={t("sr_next")} className="w-10 h-10 rounded-full bg-[#1b1b1f] hover:bg-[#1f1f23] flex items-center justify-center transition-colors">
                 <span className="material-symbols-outlined">chevron_right</span>
               </button>
             </div>
@@ -190,8 +200,8 @@ export default function SeriesPage() {
         <section className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-[#c9bfff] uppercase tracking-widest font-bold">Obras maestras autoconclusivas</span>
-              <h2 className="text-[28px] font-bold">Miniseries Exclusivas</h2>
+              <span className="text-[10px] text-[#c9bfff] uppercase tracking-widest font-bold">{t("sr_miniK")}</span>
+              <h2 className="text-[28px] font-bold">{t("sr_miniT")}</h2>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-1">
@@ -205,10 +215,10 @@ export default function SeriesPage() {
         <section className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] text-[#ffb3b3] uppercase tracking-widest font-bold">Sigue el ritmo de emisión mundial</span>
-              <h2 className="text-[28px] font-bold">Episodios Semanales</h2>
+              <span className="text-[10px] text-[#ffb3b3] uppercase tracking-widest font-bold">{t("sr_weekK")}</span>
+              <h2 className="text-[28px] font-bold">{t("sr_weekT")}</h2>
             </div>
-            <span className="text-xs text-[#e7bcbc]">Nuevas revelaciones cada semana, sin spoilers.</span>
+            <span className="text-xs text-[#e7bcbc]">{t("sr_weekS")}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {weekly.map((item) => (
@@ -217,7 +227,7 @@ export default function SeriesPage() {
           </div>
           <button className="self-start flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1b1b1f] text-xs font-semibold hover:bg-[#2a292e] transition-colors">
             <span className="material-symbols-outlined text-base">notifications_active</span>
-            Recordarme el viernes
+            {t("sr_remind")}
           </button>
         </section>
       </div>
