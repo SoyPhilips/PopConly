@@ -12,6 +12,7 @@ import { SERIES_HERO, SERIES_ROWS, BINGE_PATCH, WEEKLY_PATCH } from "@/lib/realP
 import { useSmartHero } from "@/lib/useSmartHero";
 import { useLang } from "@/lib/i18n";
 import { SERIES_FILTERS } from "@/lib/catalog";
+import { thumb } from "@/lib/thumb";
 import { BINGE_META, WEEKLY_META } from "@/components/PrototypeCards";
 import type { CatalogItem } from "@/lib/catalog";
 
@@ -109,7 +110,7 @@ export default function SeriesPage() {
         <div
           key={seriesReady ? seriesHero.title : "cargando"}
           className="absolute inset-0 bg-cover bg-center scale-105 hero-fade"
-          style={seriesReady ? { backgroundImage: `url('${seriesHero.image}')` } : undefined}
+          style={seriesReady ? { backgroundImage: `url('${thumb(seriesHero.image, 1280)}')` } : undefined}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-[#0D0D11]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D11] via-[#0D0D11]/70 to-transparent" />

@@ -10,6 +10,7 @@ import { findTitle } from "@/lib/findTitle";
 import type { CatalogItem } from "@/lib/catalog";
 import { slugify } from "@/lib/slugs";
 import { getActiveProfile } from "@/lib/activeProfile";
+import { thumb } from "@/lib/thumb";
 
 function fmt(totalSecs: number) {
   const s = Math.max(0, Math.floor(totalSecs));
@@ -560,7 +561,7 @@ export default function WatchPage() {
           className={`absolute inset-0 bg-cover bg-center transition-all duration-[1500ms] ease-out ${
             mounted ? "opacity-100" : "opacity-0"
           } ${playing ? "scale-110" : "scale-100"}`}
-          style={{ backgroundImage: `url('${item.image}')` }}
+          style={{ backgroundImage: `url('${thumb(item.image, 1280)}')` }}
         />
       )}
       <div

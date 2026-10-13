@@ -5,6 +5,7 @@ import BrowseFooter from "@/components/BrowseFooter";
 import TitleActions from "@/components/TitleActions";
 import RelatedTitles from "@/components/RelatedTitles";
 import { getAllSlugs, getRelated, getTitleBySlug } from "@/lib/catalogDb";
+import { thumb } from "@/lib/thumb";
 
 // Títulos nuevos en Mongo aparecen sin reconstruir (revalida cada hora).
 export const revalidate = 3600;
@@ -70,7 +71,7 @@ export default async function TitlePage({
       <div className="relative w-full min-h-[70vh] flex items-end overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${doc.image}')` }}
+          style={{ backgroundImage: `url('${thumb(doc.image, 1280)}')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-[#0D0D11]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D11] via-[#0D0D11]/70 to-transparent" />

@@ -333,7 +333,7 @@ export default function BrowsePage() {
         <div
           key={heroReady ? hero.title : "cargando"}
           className="absolute inset-0 bg-cover bg-center w-full h-full scale-105 hero-fade"
-          style={heroReady ? { backgroundImage: `url('${hero.image}')` } : undefined}
+          style={heroReady ? { backgroundImage: `url('${thumb(hero.image, 1280)}')` } : undefined}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-[#0D0D11]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D11] via-[#0D0D11]/70 via-40% to-transparent" />

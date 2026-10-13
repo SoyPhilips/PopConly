@@ -88,13 +88,15 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
     };
   }, [status]);
 
-  const markAllRead = async () => {
-    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+  // Estilo plataformas grandes: una notificación queda NO LEÍDA (punto rojo)
+  // hasta que se hace clic en ELLA. Abrir la campana no borra nada.
+  const markRead = async (id: string) => {
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     try {
       await fetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: getActiveProfile(), action: "read-all" }),
+        body: JSON.stringify({ profile: getActiveProfile(), action: "read", id }),
       });
     } catch {
       /* mejor esfuerzo */
@@ -256,10 +258,8 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
           <button
             aria-label={t("hdr_notifs")}
             onClick={() => {
-              const opening = !notifOpen;
-              setNotifOpen(opening);
+              setNotifOpen(!notifOpen);
               setAvatarOpen(false);
-              if (opening) void markAllRead();
             }}
             className="w-10 h-10 rounded-full bg-[#1b1b1f] border border-white/10 hover:bg-[#2a292e] flex items-center justify-center transition-colors relative"
           >
@@ -297,11 +297,15 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                     {t("hdr_notifsEmpty")}
                   </p>
                 ) : (
-                notifs.map((n) => (
+                <div className="max-h-[60vh] overflow-y-auto">
+                {notifs.map((n) => (
                   <Link
                     key={n.id}
                     href={`/watch?title=${encodeURIComponent(n.title.replace(/^(Nuevo trailer:\s*|Porque viste [^:]+:\s*)/, ""))}`}
-                    onClick={() => setNotifOpen(false)}
+                    onClick={() => {
+                      void markRead(n.id);
+                      setNotifOpen(false);
+                    }}
                     className="flex gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     <img
@@ -319,7 +323,8 @@ export default function BrowseHeader({ query, onQueryChange }: Props) {
                       <p className="text-[11px] text-white/40 mt-1">{timeAgo(n.at)}</p>
                     </div>
                   </Link>
-                ))
+                ))}
+                </div>
                 )}
               </div>
             </>

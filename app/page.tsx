@@ -217,7 +217,7 @@ export default function LandingPage() {
                 <div
                   key={i}
                   className="h-60 rounded-xl bg-cover bg-center"
-                  style={{ backgroundImage: `url('${p.image}')` }}
+                  style={{ backgroundImage: `url('${thumb(p.image, 640)}')` }}
                   title={p.alt}
                 />
               ))}

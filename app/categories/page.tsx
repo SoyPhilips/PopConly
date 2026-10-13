@@ -171,7 +171,7 @@ export default function CategoriesPage() {
           <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl">
             <span
               className="absolute inset-0 bg-cover bg-center block"
-              style={{ backgroundImage: `url('${selected.image}')` }}
+              style={{ backgroundImage: `url('${thumb(selected.image, 1280)}')` }}
             />
             <span className="absolute inset-0 bg-gradient-to-t from-[#0e0e12] via-[#0e0e12]/55 to-transparent block" />
             <span className="absolute inset-0 bg-gradient-to-r from-[#0e0e12]/80 via-transparent to-transparent block" />

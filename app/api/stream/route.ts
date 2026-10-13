@@ -89,11 +89,17 @@ export async function GET(req: Request) {
 
   if (!range) {
     const stream = createReadStream(/*turbopackIgnore: true*/ abs);
+    // Las imágenes originales cambian solo si cambia el archivo: caché larga
+    // para que recargar una pestaña no las vuelva a descargar todas.
+    const cacheable = [".jpg", ".jpeg", ".png", ".webp"].includes(ext);
     return new NextResponse(stream as unknown as ReadableStream, {
       headers: {
         "Content-Type": type,
         "Content-Length": String(stat.size),
         "Accept-Ranges": "bytes",
+        ...(cacheable
+          ? { "Cache-Control": "public, max-age=31536000, immutable" }
+          : {}),
       },
     });
   }

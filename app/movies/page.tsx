@@ -14,6 +14,7 @@ import { MOVIE_FILTERS } from "@/lib/catalog";
 import { loadMyList, saveMyList, toggleMyList } from "@/lib/myListStore";
 import { pushFavorite } from "@/lib/myListSync";
 import { useSearchScroll } from "@/lib/useSearchScroll";
+import { thumb } from "@/lib/thumb";
 import type { CatalogItem } from "@/lib/catalog";
 
 export default function MoviesPage() {
@@ -167,7 +168,7 @@ export default function MoviesPage() {
         <div
           key={movieReady ? movieHero.title : "cargando"}
           className="absolute inset-0 bg-cover bg-center scale-105 hero-fade"
-          style={movieReady ? { backgroundImage: `url('${movieHero.image}')` } : undefined}
+          style={movieReady ? { backgroundImage: `url('${thumb(movieHero.image, 1280)}')` } : undefined}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-[#0D0D11]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D11] via-[#0D0D11]/70 to-transparent" />

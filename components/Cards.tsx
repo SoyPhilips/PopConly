@@ -64,7 +64,7 @@ export function BackdropCard({ item, onSelect }: CardProps) {
     >
       <span className="relative w-full aspect-video overflow-hidden block">
         <CoverImg
-          src={item.image}
+          src={thumb(item.image, 640)}
           alt={item.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
         />
