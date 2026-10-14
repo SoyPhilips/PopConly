@@ -35,13 +35,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad-request" }, { status: 400 });
   }
 
-  // Verificación de firma (no activar nada si no coincide y hay secreto).
+  // Verificación de firma: con secreto configurado se EXIGE (sin firma
+  // válida no se activa nada; antes un evento sin firma pasaba el control).
   const received = req.headers.get("x-event-checksum") ?? body?.signature?.checksum ?? "";
   if (secret) {
     const expected = createHash("sha256")
       .update(`${tx.id}${tx.status ?? ""}${tx.amount_in_cents ?? ""}${secret}`)
       .digest("hex");
-    if (received && received !== expected) {
+    if (!received || received !== expected) {
       return NextResponse.json({ error: "bad-signature" }, { status: 401 });
     }
   }

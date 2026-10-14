@@ -18,7 +18,6 @@ export default function SignupPayment() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [pendingTx, setPendingTx] = useState<string | null>(null);
   const [reference, setReference] = useState("");
   const [reportedWompi, setReportedWompi] = useState(false);
   const wompiLinks: Record<string, string> = {
@@ -99,7 +98,9 @@ export default function SignupPayment() {
         return;
       }
       if (data?.mode === "wompi") {
-        setPendingTx(data.status ?? "PENDING");
+        // Cobro creado en Wompi: a la pantalla de retorno, que espera la
+        // confirmación del webhook y muestra "¡Pago confirmado!".
+        router.push("/signup/retorno");
         return;
       }
       setError("El pago no pudo procesarse. Inténtalo de nuevo.");
@@ -193,12 +194,6 @@ export default function SignupPayment() {
             />
           </label>
           {error && <p className="text-xs text-[#ff6b6b]">{error}</p>}
-          {pendingTx && (
-            <p className="text-xs text-[#feb700] rounded-lg bg-[#feb700]/10 px-3 py-2">
-              Pago en estado {pendingTx}. Te avisaremos por correo al confirmarse.
-              Puedes entrar mientras tanto.
-            </p>
-          )}
           <button
             type="submit"
             disabled={busy}
@@ -224,7 +219,7 @@ export default function SignupPayment() {
                 Reporte enviado. Lo revisamos y activamos tu membresía.
               </p>
             )}
-            {(reportedWompi || pendingTx) && (
+            {reportedWompi && (
               <button
                 type="button"
                 onClick={() => router.push("/browse")}

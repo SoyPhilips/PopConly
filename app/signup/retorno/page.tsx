@@ -7,7 +7,7 @@ import SignupChrome from "@/components/SignupChrome";
 
 /** /signup/retorno — a dónde vuelve el usuario tras pagar en Wompi.
  *  Configúrala como URL de retorno en el dashboard de Wompi
- *  (producción: https://popconly.tv/signup/retorno).
+ *  (producción: https://popconly.com/signup/retorno).
  *  Consulta el estado de la membresía y entra al catálogo al activarse. */
 export default function SignupRetorno() {
   const router = useRouter();
